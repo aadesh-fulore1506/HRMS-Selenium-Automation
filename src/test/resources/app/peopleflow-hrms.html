@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PeopleFlow HRMS</title>
+<style>
+:root{
+  --navy:#0f2540; --navy-dark:#0a1a2e; --blue:#2563eb; --blue-dark:#1d4ed8;
+  --green:#16a34a; --red:#dc2626; --amber:#d97706; --gray-50:#f7f8fa; --gray-100:#eef1f5;
+  --gray-200:#e2e6ec; --gray-400:#9aa4b2; --gray-600:#5b6472; --gray-800:#28303c; --white:#ffffff;
+  --radius:8px; --shadow:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06);
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--gray-50);color:var(--gray-800);font-size:14px;}
+a{color:var(--blue);text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:14px}
+h1,h2,h3,h4{margin:0 0 4px}
+.hidden{display:none !important}
+
+/* LOGIN */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-dark) 100%);padding:20px}
+.login-card{background:var(--white);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:420px;padding:36px 32px}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.login-logo-mark{width:38px;height:38px;border-radius:8px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+.login-card h1{font-size:20px}
+.login-card p.sub{color:var(--gray-600);margin:0 0 24px;font-size:13px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--gray-800)}
+.form-control{width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:6px;background:#fff}
+.form-control:focus{outline:2px solid var(--blue);outline-offset:0;border-color:var(--blue)}
+.form-error{color:var(--red);font-size:12px;margin-top:4px;display:none}
+.form-error.show{display:block}
+.pw-wrap{position:relative}
+.pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-600);font-size:12px;font-weight:600}
+.row-between{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.checkbox-row{display:flex;align-items:center;gap:6px;font-size:13px}
+.btn{padding:10px 18px;border-radius:6px;border:1px solid transparent;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark)}
+.btn-primary:disabled{background:#93b4f5;cursor:not-allowed}
+.btn-secondary{background:#fff;border-color:var(--gray-200);color:var(--gray-800)}
+.btn-secondary:hover{background:var(--gray-100)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-block{width:100%}
+.btn-sm{padding:6px 10px;font-size:12px}
+.demo-creds{margin-top:22px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--gray-600)}
+.demo-creds b{color:var(--gray-800)}
+.demo-creds div{margin:3px 0}
+.alert{padding:10px 12px;border-radius:6px;font-size:13px;margin-bottom:16px;display:none}
+.alert.show{display:block}
+.alert-error{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* APP SHELL */
+#appShell{display:none;min-height:100vh}
+#appShell.active{display:flex}
+#sidebar{width:230px;background:var(--navy);color:#cbd5e1;flex-shrink:0;display:flex;flex-direction:column;transition:width .15s}
+#sidebar.collapsed{width:64px}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-brand-mark{width:32px;height:32px;border-radius:7px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.sb-brand-text{font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden}
+.sb-brand-text small{display:block;font-weight:400;font-size:10px;color:#93a2b8}
+#sidebar.collapsed .sb-brand-text{display:none}
+.sb-nav{flex:1;padding:10px 8px;overflow-y:auto}
+.sb-link{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:6px;color:#cbd5e1;font-size:13.5px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;border:none;background:none;width:100%;text-align:left}
+.sb-link .ic{width:18px;text-align:center;flex-shrink:0}
+.sb-link:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-link.active{background:var(--blue);color:#fff}
+#sidebar.collapsed .sb-link span.lbl{display:none}
+.sb-foot{padding:10px 8px;border-top:1px solid rgba(255,255,255,.08)}
+
+#mainArea{flex:1;display:flex;flex-direction:column;min-width:0}
+#topHeader{background:#fff;border-bottom:1px solid var(--gray-200);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:20}
+.th-left{display:flex;align-items:center;gap:14px;min-width:0}
+#sidebarToggle{background:none;border:1px solid var(--gray-200);border-radius:6px;width:34px;height:34px;font-size:15px;color:var(--gray-600)}
+#pageTitle{font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.th-search{position:relative}
+#globalSearch{padding:8px 12px 8px 30px;border:1px solid var(--gray-200);border-radius:6px;width:220px;background:#f7f8fa}
+.th-search .ic{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gray-400);font-size:12px}
+.th-right{display:flex;align-items:center;gap:12px;position:relative;flex-shrink:0}
+.icon-btn{position:relative;background:none;border:none;font-size:17px;color:var(--gray-600);width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.icon-btn:hover{background:var(--gray-100)}
+.badge-dot{position:absolute;top:3px;right:3px;background:var(--red);color:#fff;font-size:9px;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+.profile-btn{display:flex;align-items:center;gap:8px;background:none;border:none;padding:4px 6px 4px 4px;border-radius:6px}
+.profile-btn:hover{background:var(--gray-100)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.profile-meta{text-align:left;line-height:1.2}
+.profile-meta .nm{font-size:13px;font-weight:600}
+.profile-meta .rl{font-size:11px;color:var(--gray-600)}
+.dropdown-panel{position:absolute;top:46px;right:0;background:#fff;border:1px solid var(--gray-200);box-shadow:0 10px 30px rgba(0,0,0,.12);border-radius:8px;width:300px;z-index:50;display:none}
+.dropdown-panel.open{display:block}
+.dropdown-panel.wide{width:230px}
+.dd-header{padding:12px 14px;border-bottom:1px solid var(--gray-200);font-weight:700;font-size:13px;display:flex;justify-content:space-between}
+.notif-item{padding:11px 14px;border-bottom:1px solid var(--gray-100);cursor:pointer;font-size:12.5px}
+.notif-item:hover{background:var(--gray-50)}
+.notif-item.unread{background:#eff6ff}
+.notif-item .t{font-weight:600;margin-bottom:2px}
+.notif-item .m{color:var(--gray-600)}
+.notif-item .tm{color:var(--gray-400);font-size:11px;margin-top:3px}
+.dd-empty{padding:24px;text-align:center;color:var(--gray-400);font-size:12.5px}
+.dd-link-item{display:block;width:100%;text-align:left;padding:10px 14px;background:none;border:none;font-size:13px;color:var(--gray-800)}
+.dd-link-item:hover{background:var(--gray-50)}
+.dd-link-item.danger{color:var(--red)}
+
+#pageContent{padding:22px;flex:1;overflow-x:hidden}
+
+/* Cards / grid */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.stat-card .lbl{font-size:12px;color:var(--gray-600);font-weight:600;margin-bottom:8px}
+.stat-card .val{font-size:26px;font-weight:800}
+.stat-card .ic{float:right;font-size:20px;opacity:.35}
+.panel{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center}
+.panel-head h3{font-size:14.5px}
+.panel-body{padding:16px 18px}
+.two-col{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+@media(max-width:1000px){.two-col{grid-template-columns:1fr}}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:12.5px}
+.bar-row .bl{width:90px;flex-shrink:0;color:var(--gray-600)}
+.bar-track{flex:1;background:var(--gray-100);border-radius:5px;height:10px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px}
+.bar-row .bv{width:34px;text-align:right;font-weight:700}
+
+/* Toolbar / filters */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.toolbar .grow{flex:1;min-width:180px}
+.search-box{position:relative}
+.search-box input{padding-left:30px}
+.search-box .ic{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gray-400)}
+select.form-control{background:#fff}
+
+/* Tables */
+.table-wrap{overflow-x:auto}
+table.data-table{width:100%;border-collapse:collapse;font-size:13px;min-width:700px}
+table.data-table th{text-align:left;padding:10px 12px;background:var(--gray-50);color:var(--gray-600);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--gray-200);white-space:nowrap;cursor:pointer;user-select:none}
+table.data-table td{padding:10px 12px;border-bottom:1px solid var(--gray-100);vertical-align:middle}
+table.data-table tbody tr:hover{background:var(--gray-50)}
+.cell-emp{display:flex;align-items:center;gap:8px}
+.mini-avatar{width:28px;height:28px;border-radius:50%;background:var(--gray-200);color:var(--gray-800);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0}
+.badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:700}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-red{background:#fee2e2;color:#b91c1c}
+.badge-amber{background:#fef3c7;color:#92400e}
+.badge-gray{background:var(--gray-100);color:var(--gray-600)}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.action-icons{display:flex;gap:6px}
+.act-btn{background:none;border:1px solid var(--gray-200);border-radius:5px;width:28px;height:28px;font-size:12px}
+.act-btn:hover{background:var(--gray-100)}
+.act-btn.danger:hover{background:#fee2e2;border-color:#fecaca}
+.empty-state{text-align:center;padding:50px 20px;color:var(--gray-400)}
+.empty-state .ic{font-size:34px;margin-bottom:10px}
+.loading-row{text-align:center;padding:40px;color:var(--gray-400)}
+
+.pagination-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 4px 4px;flex-wrap:wrap;gap:10px}
+.page-info{font-size:12.5px;color:var(--gray-600)}
+.page-controls{display:flex;align-items:center;gap:4px}
+.page-btn{min-width:30px;height:30px;border:1px solid var(--gray-200);background:#fff;border-radius:5px;font-size:12.5px}
+.page-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
+.rows-select{padding:5px 8px;border:1px solid var(--gray-200);border-radius:5px;font-size:12.5px}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:flex-start;justify-content:center;z-index:100;overflow-y:auto;padding:40px 16px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:10px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.3);margin-bottom:40px}
+.modal-box.wide{max-width:760px}
+.modal-box.narrow{max-width:420px}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-size:16px}
+.modal-close{background:none;border:none;font-size:18px;color:var(--gray-600);cursor:pointer}
+.modal-body{padding:18px 20px;max-height:65vh;overflow-y:auto}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:8px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+@media(max-width:560px){.form-grid{grid-template-columns:1fr}}
+.form-grid .full{grid-column:1/-1}
+
+/* Toast */
+#toast-container{position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:8px;max-width:340px}
+.toast-message{background:#1e293b;color:#fff;padding:12px 14px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:flex;align-items:flex-start;gap:8px;border-left:4px solid var(--blue)}
+.toast-message.success{border-left-color:var(--green)}
+.toast-message.error{border-left-color:var(--red)}
+.toast-message .tx{flex:1}
+.toast-message .close-x{background:none;border:none;color:#94a3b8;font-size:13px}
+
+/* Detail page */
+.detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.detail-id-row{display:flex;align-items:center;gap:14px}
+.big-avatar{width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px}
+.tabs-bar{display:flex;gap:4px;border-bottom:1px solid var(--gray-200);margin-bottom:16px}
+.tab-btn{padding:9px 16px;background:none;border:none;font-size:13px;font-weight:600;color:var(--gray-600);border-bottom:2px solid transparent}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px 20px}
+.info-item .lb{font-size:11px;text-transform:uppercase;color:var(--gray-400);font-weight:700;margin-bottom:3px}
+.info-item .vl{font-size:14px;font-weight:600}
+
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+.required:after{content:" *";color:var(--red)}
+.helper-text{font-size:11.5px;color:var(--gray-400);margin-top:3px}
+.section-title{font-size:12.5px;font-weight:700;color:var(--gray-600);text-transform:uppercase;letter-spacing:.03em;margin:18px 0 10px}
+.section-title:first-child{margin-top:0}
+.link-tab{display:flex;gap:6px;margin-bottom:16px}
+.link-tab button{padding:8px 14px;border:1px solid var(--gray-200);background:#fff;border-radius:6px;font-size:13px;font-weight:600}
+.link-tab button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+@media(max-width:820px){
+  #sidebar{position:fixed;left:0;top:0;bottom:0;z-index:60;transform:translateX(0)}
+  #sidebar.collapsed{width:0;overflow:hidden}
+  .th-search{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo"><div class="login-logo-mark">PF</div><div><h1 style="margin:0">PeopleFlow</h1></div></div>
+    <p class="sub">Human Resource Management System</p>
+    <div id="loginAlert" class="alert alert-error" data-testid="login-error"></div>
+    <form id="loginForm" novalidate>
+      <div class="form-group">
+        <label for="email">Username / Email</label>
+        <input type="text" id="email" data-testid="email" class="form-control" placeholder="you@peopleflow.com" autocomplete="username">
+        <div class="form-error" id="emailError" data-testid="email-error">Email is required.</div>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="password" data-testid="password" class="form-control" placeholder="Enter your password" autocomplete="current-password">
+          <button type="button" class="pw-toggle" id="togglePw" data-testid="toggle-password">SHOW</button>
+        </div>
+        <div class="form-error" id="passwordError" data-testid="password-error">Password is required.</div>
+      </div>
+      <div class="row-between">
+        <label class="checkbox-row"><input type="checkbox" id="rememberMe" data-testid="rememberMe"> Remember me</label>
+        <a href="#" id="forgotPassword" data-testid="forgotPassword">Forgot password?</a>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="loginButton" data-testid="login-button">
+        <span id="loginBtnText">Log In</span>
+      </button>
+    </form>
+    <div class="demo-creds" data-testid="demo-credentials">
+      <div><b>Demo Credentials</b></div>
+      <div>Admin: <b>admin@peopleflow.com</b> / Admin@123</div>
+      <div>HR: <b>hr@peopleflow.com</b> / Hr@123</div>
+      <div>Employee: <b>employee@peopleflow.com</b> / Employee@123</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="appShell">
+  <aside id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-brand-mark">PF</div>
+      <div class="sb-brand-text">PeopleFlow<small>HRMS</small></div>
+    </div>
+    <nav class="sb-nav" id="sbNav" data-testid="sidebar-nav"></nav>
+    <div class="sb-foot">
+      <button class="sb-link" id="logoutBtn" data-testid="logout-button"><span class="ic">&#9211;</span><span class="lbl">Logout</span></button>
+    </div>
+  </aside>
+
+  <div id="mainArea">
+    <header id="topHeader">
+      <div class="th-left">
+        <button id="sidebarToggle" data-testid="sidebar-toggle">&#9776;</button>
+        <div id="pageTitle" data-testid="page-title">Dashboard</div>
+      </div>
+      <div class="th-left" style="flex:1;justify-content:flex-end">
+        <div class="th-search">
+          <span class="ic">&#128269;</span>
+          <input id="globalSearch" data-testid="global-search" class="form-control" placeholder="Search employees, departments...">
+        </div>
+        <div class="th-right">
+          <div style="position:relative">
+            <button class="icon-btn" id="notifBtn" data-testid="notifications-button">&#128276;<span class="badge-dot hidden" id="notifCount" data-testid="notification-count">0</span></button>
+            <div class="dropdown-panel" id="notifPanel" data-testid="notifications-panel">
+              <div class="dd-header"><span>Notifications</span></div>
+              <div id="notifList"></div>
+            </div>
+          </div>
+          <div style="position:relative">
+            <button class="profile-btn" id="profileBtn" data-testid="profile-button">
+              <div class="avatar" id="hdrAvatar">A</div>
+              <div class="profile-meta"><div class="nm" id="hdrName">-</div><div class="rl" id="hdrRole" data-testid="user-role">-</div></div>
+            </button>
+            <div class="dropdown-panel wide" id="profilePanel" data-testid="profile-panel">
+              <button class="dd-link-item" data-testid="menu-my-profile" onclick="location.hash='#/settings'">My Profile</button>
+              <button class="dd-link-item" data-testid="menu-settings" onclick="location.hash='#/settings'">Settings</button>
+              <button class="dd-link-item danger" id="logoutMenuBtn" data-testid="menu-logout">Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main id="pageContent" data-testid="page-content"></main>
+  </div>
+</div>
+
+<!-- Generic Modal -->
+<div class="modal-overlay" id="modalOverlay" data-testid="modal-overlay">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-head">
+      <h3 id="modalTitle">Title</h3>
+      <button class="modal-close" id="modalCloseBtn" data-testid="modal-close">&#10005;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmOverlay" data-testid="confirm-overlay">
+  <div class="modal-box narrow">
+    <div class="modal-head"><h3 id="confirmTitle">Confirm</h3><button class="modal-close" data-testid="confirm-close" onclick="closeConfirm()">&#10005;</button></div>
+    <div class="modal-body"><p id="confirmMessage" data-testid="confirm-message"></p><div id="confirmExtra"></div></div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" id="cancelButton" data-testid="cancelButton" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirmButton" data-testid="confirmButton">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" data-testid="toast-container"></div>
+
+<script>
+/* =========================================================
+   PeopleFlow HRMS — data layer
+========================================================= */
+const STORAGE_KEY = 'peopleflow_data_v1';
+const SESSION_KEY = 'peopleflow_session_v1';
+
+const DEPT_LIST = ['IT','Human Resources','Finance','Sales','Marketing','Operations'];
+const DESIGNATIONS = {
+  'IT':['Software Engineer','Senior Software Engineer','QA Engineer','DevOps Engineer','IT Manager','System Administrator'],
+  'Human Resources':['HR Executive','HR Manager','Recruiter','HR Generalist'],
+  'Finance':['Accountant','Financial Analyst','Finance Manager','Accounts Payable Specialist'],
+  'Sales':['Sales Executive','Sales Manager','Business Development Executive','Account Manager'],
+  'Marketing':['Marketing Executive','Marketing Manager','Content Strategist','SEO Specialist'],
+  'Operations':['Operations Executive','Operations Manager','Logistics Coordinator','Process Analyst']
+};
+const FIRST_NAMES = ['Aarav','Vivaan','Aditya','Vihaan','Arjun','Sai','Reyansh','Krishna','Ishaan','Rohan',
+  'Priya','Ananya','Diya','Saanvi','Aadhya','Kavya','Isha','Meera','Riya','Sneha',
+  'Rahul','Karan','Nikhil','Varun','Siddharth','Pooja','Neha','Shreya','Divya','Anjali'];
+const LAST_NAMES = ['Sharma','Verma','Gupta','Kumar','Singh','Reddy','Iyer','Nair','Patel','Mehta',
+  'Joshi','Rao','Desai','Chopra','Kapoor','Malhotra','Bhatt','Agarwal','Menon','Pillai'];
+const CITIES = [['Mumbai','Maharashtra','400001'],['Pune','Maharashtra','411001'],['Bengaluru','Karnataka','560001'],
+  ['Chennai','Tamil Nadu','600001'],['Hyderabad','Telangana','500001'],['Delhi','Delhi','110001'],
+  ['Ahmedabad','Gujarat','380001'],['Kolkata','West Bengal','700001'],['Jaipur','Rajasthan','302001'],['Pune','Maharashtra','411014']];
+
+function pad(n,len){ n=String(n); while(n.length<len) n='0'+n; return n; }
+
+function seedEmployees(){
+  const emps=[]; const usedEmails=new Set();
+  for(let i=0;i<28;i++){
+    const fn = FIRST_NAMES[i % FIRST_NAMES.length];
+    const ln = LAST_NAMES[(i*3+2) % LAST_NAMES.length];
+    const dept = DEPT_LIST[i % DEPT_LIST.length];
+    const desigList = DESIGNATIONS[dept];
+    const desig = desigList[i % desigList.length];
+    let email = (fn+'.'+ln+i).toLowerCase()+'@peopleflow.com';
+    while(usedEmails.has(email)) email = (fn+'.'+ln+i+'x').toLowerCase()+'@peopleflow.com';
+    usedEmails.add(email);
+    const city = CITIES[i % CITIES.length];
+    const genderPool = ['Male','Female','Other'];
+    const gender = i%5===4?'Other':(i%2===0?'Male':'Female');
+    const joinYear = 2019 + (i % 6);
+    const joinMonth = pad(((i*7)%12)+1,2);
+    const joinDay = pad(((i*11)%27)+1,2);
+    const dobYear = 1985 + (i % 15);
+    const empType = ['Full Time','Full Time','Full Time','Part Time','Contract','Intern'][i%6];
+    const baseSalary = 35000 + (desigList.indexOf(desig)+1)*15000 + (i%5)*2500;
+    emps.push({
+      id:'EMP'+pad(1001+i,4),
+      firstName:fn, lastName:ln,
+      email, phone:'+91 9'+pad(100000000+i*137,9),
+      dob: dobYear+'-'+pad(((i*5)%12)+1,2)+'-'+pad(((i*9)%27)+1,2),
+      gender, department:dept, designation:desig,
+      joiningDate: joinYear+'-'+joinMonth+'-'+joinDay,
+      employmentType:empType, salary: baseSalary,
+      address:(100+i)+' MG Road', city:city[0], state:city[1], postalCode:city[2],
+      emergencyContact:'+91 8'+pad(200000000+i*91,9),
+      status: (i%11===0)?'Inactive':'Active'
+    });
+  }
+  return emps;
+}
+
+function seedDepartments(){
+  return [
+    {id:'DEPT001',name:'IT',head:'Rohan Kumar',description:'Handles software development, infrastructure and IT support.',status:'Active'},
+    {id:'DEPT002',name:'Human Resources',head:'Priya Sharma',description:'Manages hiring, employee relations and HR policy.',status:'Active'},
+    {id:'DEPT003',name:'Finance',head:'Nikhil Verma',description:'Oversees budgeting, payroll and financial reporting.',status:'Active'},
+    {id:'DEPT004',name:'Sales',head:'Ananya Gupta',description:'Drives revenue through client acquisition and account growth.',status:'Active'},
+    {id:'DEPT005',name:'Marketing',head:'Karan Singh',description:'Manages branding, campaigns and market research.',status:'Active'},
+    {id:'DEPT006',name:'Operations',head:'Divya Reddy',description:'Ensures smooth day-to-day business operations.',status:'Active'}
+  ];
+}
+
+function seedAttendance(employees){
+	function noTodayAttendanceIds(employees){
+		  return employees.filter(e=>e.status==='Active').slice(-3).map(e=>e.id);
+		}
+  const records=[]; const today=new Date(); let counter=1;
+  for(let d=6; d>=0; d--){
+    const dt = new Date(today); dt.setDate(today.getDate()-d);
+    const dateStr = dt.toISOString().slice(0,10);
+    const skipToday = noTodayAttendanceIds(employees);
+    employees.forEach((e,idx)=>{
+      if(e.status!=='Active') return;
+      if(d===0 && skipToday.includes(e.id)) return;
+      const roll = (idx+d)%10;
+      let status='Present', checkIn='09:0'+((idx%5))+':00', checkOut='18:0'+((idx%5))+':00', hrs='9.0';
+      if(roll===0){status='Absent';checkIn='-';checkOut='-';hrs='0';}
+      else if(roll===1){status='Late';checkIn='10:15:00';checkOut='18:10:00';hrs='7.9';}
+      else if(roll===2){status='Half Day';checkIn='09:05:00';checkOut='13:30:00';hrs='4.4';}
+      else if(roll===3 && d<3){status='Leave';checkIn='-';checkOut='-';hrs='0';}
+      records.push({id:'ATT'+pad(counter++,5),employeeId:e.id,employeeName:e.firstName+' '+e.lastName,department:e.department,date:dateStr,checkIn,checkOut,workingHours:hrs,status});
+    });
+  }
+  return records;
+}
+
+function seedLeaves(employees){
+  const types=['Casual Leave','Sick Leave','Earned Leave','Emergency Leave','Unpaid Leave'];
+  const statuses=['Pending','Approved','Rejected','Approved','Pending','Cancelled'];
+  const leaves=[]; 
+  for(let i=0;i<16;i++){
+    const e = employees[(i*3)%employees.length];
+    const from = new Date(); from.setDate(from.getDate()+ (i*2 - 10));
+    const to = new Date(from); to.setDate(from.getDate()+ (i%4));
+    const days = Math.round((to-from)/86400000)+1;
+    const applied = new Date(from); applied.setDate(from.getDate()-3);
+    leaves.push({
+      id:'LV'+pad(2001+i,4), employeeId:e.id, employeeName:e.firstName+' '+e.lastName, department:e.department,
+      leaveType:types[i%types.length], from:from.toISOString().slice(0,10), to:to.toISOString().slice(0,10),
+      days, reason:['Family function','Not feeling well','Personal work','Medical appointment','Travel plans'][i%5],
+      appliedDate:applied.toISOString().slice(0,10), status:statuses[i%statuses.length], rejectionReason:''
+    });
+  }
+  return leaves;
+}
+
+function seedUsers(){
+  return [
+    {username:'admin@peopleflow.com',password:'Admin@123',name:'System Administrator',role:'Admin',status:'Active',employeeId:null},
+    {username:'hr@peopleflow.com',password:'Hr@123',name:'Priya Sharma',role:'HR',status:'Active',employeeId:'EMP1002'},
+    {username:'employee@peopleflow.com',password:'Employee@123',name:'Aarav Sharma',role:'Employee',status:'Active',employeeId:'EMP1001'}
+  ];
+}
+
+function seedNotifications(){
+  return [
+    {id:1,title:'New leave request',message:'Rahul Kumar applied for Casual Leave.',time:'10 min ago',read:false},
+    {id:2,title:'Leave approved',message:'Your Sick Leave request was approved.',time:'1 hour ago',read:false},
+    {id:3,title:'Employee added',message:'Neha Singh was added to the IT department.',time:'3 hours ago',read:false},
+    {id:4,title:'Attendance reminder',message:'Please mark your attendance for today.',time:'Yesterday',read:true}
+  ];
+}
+
+function seedAll(){
+  const employees = seedEmployees();
+  return {
+    employees,
+    departments: seedDepartments(),
+    attendance: seedAttendance(employees),
+    leaves: seedLeaves(employees),
+    users: seedUsers(),
+    notifications: seedNotifications(),
+    company:{name:'PeopleFlow Inc.',email:'contact@peopleflow.com',phone:'+91 22 4000 5000',address:'12th Floor, Tech Park, Bengaluru, Karnataka, India'}
+  };
+}
+
+let DB = null;
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+        DB = JSON.parse(raw);
+        const flag = STORAGE_KEY+'_att_today_v2';
+        if(!localStorage.getItem(flag)){
+          const t = new Date().toISOString().slice(0,10), skip = noTodayAttendanceIds(DB.employees||[]);
+          DB.attendance = (DB.attendance||[]).filter(a=>!(a.date===t && skip.includes(a.employeeId)));
+          localStorage.setItem(flag,'1'); saveDB();
+        }
+      }
+      else { DB = seedAll(); try{ localStorage.setItem(STORAGE_KEY+'_att_today_v2','1'); }catch(e){} saveDB(); }
+  }catch(e){ DB = seedAll(); saveDB(); }
+}
+function saveDB(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }catch(e){} }
+function resetDB(){ DB = seedAll(); saveDB(); toast('Demo data has been reset.','success'); render(); }
+
+/* =========================================================
+   SESSION
+========================================================= */
+let currentUser = null;
+function loadSession(){
+  try{ const raw = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
+    if(raw) currentUser = JSON.parse(raw);
+  }catch(e){}
+}
+function saveSession(remember){
+  const str = JSON.stringify(currentUser);
+  if(remember) localStorage.setItem(SESSION_KEY,str);
+  sessionStorage.setItem(SESSION_KEY,str);
+}
+function clearSession(){ sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); currentUser=null; }
+
+/* =========================================================
+   TOAST
+========================================================= */
+function toast(msg,type){
+  type = type || 'info';
+  const c = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast-message '+type;
+  el.setAttribute('data-testid','toast-message');
+  el.innerHTML = '<span class="tx">'+msg+'</span><button class="close-x">&#10005;</button>';
+  el.querySelector('.close-x').onclick = ()=> el.remove();
+  c.appendChild(el);
+  setTimeout(()=>{ if(el.parentNode) el.remove(); }, 3500);
+}
+
+/* =========================================================
+   CONFIRM MODAL
+========================================================= */
+let confirmCallback = null;
+function showConfirm(title,message,onConfirm,opts){
+  opts = opts || {};
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMessage').textContent = message;
+  const extra = document.getElementById('confirmExtra');
+  extra.innerHTML='';
+  if(opts.needReason){
+    extra.innerHTML = '<div class="form-group" style="margin-top:10px"><label class="required" for="reasonInput">Reason</label><textarea id="reasonInput" data-testid="reason-input" class="form-control" rows="3" placeholder="Enter reason..."></textarea><div class="form-error" id="reasonError" data-testid="reason-error">Reason is required.</div></div>';
+  }
+  const btn = document.getElementById('confirmButton');
+  btn.textContent = opts.confirmLabel || 'Confirm';
+  btn.className = 'btn '+(opts.danger===false?'btn-primary':'btn-danger');
+  confirmCallback = ()=>{
+    if(opts.needReason){
+      const val = document.getElementById('reasonInput').value.trim();
+      if(!val){ document.getElementById('reasonError').classList.add('show'); return; }
+      onConfirm(val);
+    } else { onConfirm(); }
+  };
+  btn.onclick = confirmCallback;
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm(){ document.getElementById('confirmOverlay').classList.remove('open'); }
+
+/* =========================================================
+   GENERIC MODAL
+========================================================= */
+function openModal(title, bodyHtml, footHtml, wide){
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = bodyHtml;
+  document.getElementById('modalFoot').innerHTML = footHtml || '';
+  const box = document.getElementById('modalBox');
+  box.className = 'modal-box'+(wide?' wide':'');
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+document.getElementById('modalCloseBtn').onclick = closeModal;
+document.getElementById('modalOverlay').addEventListener('mousedown',(e)=>{ if(e.target.id==='modalOverlay') closeModal(); });
+document.getElementById('confirmOverlay').addEventListener('mousedown',(e)=>{ if(e.target.id==='confirmOverlay') closeConfirm(); });
+
+/* =========================================================
+   ROUTER
+========================================================= */
+const ROLE_MENU = [
+  {route:'dashboard', label:'Dashboard', icon:'&#128202;', roles:['Admin','HR','Employee']},
+  {route:'employees', label:'Employees', icon:'&#128101;', roles:['Admin','HR']},
+  {route:'departments', label:'Departments', icon:'&#127970;', roles:['Admin','HR']},
+  {route:'attendance', label:'Attendance', icon:'&#128197;', roles:['Admin','HR','Employee']},
+  {route:'leave-management', label:'Leave Management', icon:'&#128203;', roles:['Admin','HR','Employee']},
+  {route:'users', label:'Users & Roles', icon:'&#128274;', roles:['Admin']},
+  {route:'reports', label:'Reports', icon:'&#128200;', roles:['Admin','HR']},
+  {route:'settings', label:'Settings', icon:'&#9881;', roles:['Admin','HR','Employee']}
+];
+const PAGE_TITLES = {dashboard:'Dashboard',employees:'Employee Management',departments:'Department Management',attendance:'Attendance Management','leave-management':'Leave Management',users:'Users & Roles',reports:'Reports',settings:'Settings'};
+
+function currentRoute(){
+  let hash = location.hash.replace('#/','').split('?')[0].split('/')[0];
+  if(!hash) hash='dashboard';
+  return hash;
+}
+function routeAllowed(route){
+  const m = ROLE_MENU.find(x=>x.route===route);
+  if(!m) return false;
+  return m.roles.includes(currentUser.role);
+}
+function renderSidebar(){
+  const nav = document.getElementById('sbNav');
+  const route = currentRoute();
+  nav.innerHTML = ROLE_MENU.filter(m=>m.roles.includes(currentUser.role)).map(m=>
+    '<button class="sb-link '+(route===m.route?'active':'')+'" data-testid="nav-'+m.route+'" onclick="location.hash=\'#/'+m.route+'\'"><span class="ic">'+m.icon+'</span><span class="lbl">'+m.label+'</span></button>'
+  ).join('');
+}
+
+function render(){
+  if(!currentUser){
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('appShell').classList.remove('active');
+    return;
+  }
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appShell').classList.add('active');
+  const route = currentRoute();
+  if(!routeAllowed(route)){
+    toast('You do not have permission to access this page.','error');
+    location.hash = '#/dashboard';
+    return;
+  }
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[route] || 'Dashboard';
+  renderSidebar();
+  renderHeaderUser();
+  renderNotifications();
+  const content = document.getElementById('pageContent');
+  content.innerHTML = '<div class="loading-row" data-testid="loading-state">Loading...</div>';
+  setTimeout(()=>{
+    if(route==='dashboard') renderDashboard(content);
+    else if(route==='employees'){
+      const parts = location.hash.split('/');
+      if(parts[2]) renderEmployeeDetail(content, parts[2]); else renderEmployees(content);
+    }
+    else if(route==='departments') renderDepartments(content);
+    else if(route==='attendance') renderAttendance(content);
+    else if(route==='leave-management') renderLeaves(content);
+    else if(route==='users') renderUsers(content);
+    else if(route==='reports') renderReports(content);
+    else if(route==='settings') renderSettings(content);
+  }, 150);
+}
+window.addEventListener('hashchange', render);
+
+function renderHeaderUser(){
+  document.getElementById('hdrAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+  document.getElementById('hdrName').textContent = currentUser.name;
+  document.getElementById('hdrRole').textContent = currentUser.role;
+}
+function renderNotifications(){
+  const unread = DB.notifications.filter(n=>!n.read).length;
+  const cEl = document.getElementById('notifCount');
+  if(unread>0){ cEl.textContent = unread; cEl.classList.remove('hidden'); } else cEl.classList.add('hidden');
+  const list = document.getElementById('notifList');
+  if(DB.notifications.length===0){ list.innerHTML='<div class="dd-empty">No notifications</div>'; return; }
+  list.innerHTML = DB.notifications.map(n=>
+    '<div class="notif-item '+(n.read?'':'unread')+'" data-testid="notification-item-'+n.id+'" onclick="markNotifRead('+n.id+')"><div class="t">'+n.title+'</div><div class="m">'+n.message+'</div><div class="tm">'+n.time+'</div></div>'
+  ).join('');
+}
+function markNotifRead(id){ const n = DB.notifications.find(x=>x.id===id); if(n){ n.read=true; saveDB(); renderNotifications(); } }
+
+/* =========================================================
+   AUTH
+========================================================= */
+document.getElementById('togglePw').onclick = function(){
+  const p = document.getElementById('password');
+  const show = p.type==='password';
+  p.type = show?'text':'password';
+  this.textContent = show?'HIDE':'SHOW';
+};
+document.getElementById('forgotPassword').onclick = function(e){
+  e.preventDefault();
+  toast('Please contact your system administrator to reset your password.','info');
+};
+document.getElementById('loginForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const pw = document.getElementById('password').value;
+  let valid = true;
+  document.getElementById('emailError').classList.remove('show');
+  document.getElementById('passwordError').classList.remove('show');
+  document.getElementById('loginAlert').classList.remove('show');
+  if(!email){ document.getElementById('emailError').classList.add('show'); valid=false; }
+  if(!pw){ document.getElementById('passwordError').classList.add('show'); valid=false; }
+  if(!valid) return;
+
+  const btn = document.getElementById('loginButton');
+  btn.disabled = true;
+  document.getElementById('loginBtnText').innerHTML = '<span class="spinner"></span> Logging in...';
+
+  setTimeout(()=>{
+    const user = DB.users.find(u=>u.username.toLowerCase()===email.toLowerCase() && u.password===pw);
+    btn.disabled = false;
+    document.getElementById('loginBtnText').textContent = 'Log In';
+    if(!user){
+      const alertEl = document.getElementById('loginAlert');
+      alertEl.textContent = 'Invalid email or password. Please try again.';
+      alertEl.classList.add('show');
+      toast('Invalid credentials.','error');
+      return;
+    }
+    if(user.status!=='Active'){
+      const alertEl = document.getElementById('loginAlert');
+      alertEl.textContent = 'This account has been deactivated.';
+      alertEl.classList.add('show');
+      return;
+    }
+    currentUser = {username:user.username,name:user.name,role:user.role,employeeId:user.employeeId};
+    saveSession(document.getElementById('rememberMe').checked);
+    toast('Welcome back, '+user.name+'!','success');
+    location.hash = '#/dashboard';
+    render();
+  }, 600);
+});
+
+function doLogout(){
+  showConfirm('Logout','Are you sure you want to logout?', ()=>{
+    clearSession();
+    closeConfirm();
+    document.getElementById('loginForm').reset();
+    location.hash='';
+    render();
+    toast('You have been logged out.','success');
+  }, {confirmLabel:'Logout', danger:true});
+}
+document.getElementById('logoutBtn').onclick = doLogout;
+document.getElementById('logoutMenuBtn').onclick = doLogout;
+
+/* profile / notif dropdown toggles */
+document.getElementById('profileBtn').onclick = (e)=>{ e.stopPropagation(); toggleDD('profilePanel'); };
+document.getElementById('notifBtn').onclick = (e)=>{ e.stopPropagation(); toggleDD('notifPanel'); };
+function toggleDD(id){
+  ['profilePanel','notifPanel'].forEach(pid=>{
+    const el = document.getElementById(pid);
+    if(pid===id) el.classList.toggle('open'); else el.classList.remove('open');
+  });
+}
+document.addEventListener('click', ()=>{ document.getElementById('profilePanel').classList.remove('open'); document.getElementById('notifPanel').classList.remove('open'); });
+
+document.getElementById('sidebarToggle').onclick = ()=> document.getElementById('sidebar').classList.toggle('collapsed');
+
+document.getElementById('globalSearch').addEventListener('keydown', function(e){
+  if(e.key==='Enter' && this.value.trim()){
+    location.hash = '#/employees?q='+encodeURIComponent(this.value.trim());
+    render();
+  }
+});
+
+/* =========================================================
+   UTIL
+========================================================= */
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtMoney(n){ return '₹'+Number(n).toLocaleString('en-IN'); }
+function statusBadge(status){
+  const map = {Active:'green',Present:'green',Approved:'green',Inactive:'red',Absent:'red',Rejected:'red',
+    Late:'amber',Pending:'amber','Half Day':'amber',Leave:'blue',Cancelled:'gray'};
+  return '<span class="badge badge-'+(map[status]||'gray')+'">'+status+'</span>';
+}
+function empName(id){ const e=DB.employees.find(x=>x.id===id); return e?(e.firstName+' '+e.lastName):id; }
+function initials(name){ return name.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase(); }
+
+function paginationControls(total, page, pageSize, onGoto){
+  const totalPages = Math.max(1, Math.ceil(total/pageSize));
+  page = Math.min(page, totalPages);
+  let nums='';
+  for(let i=1;i<=totalPages;i++){
+    if(totalPages>7 && i!==1 && i!==totalPages && Math.abs(i-page)>1){
+      if(i===2||i===totalPages-1) nums+='<span style="padding:0 4px">…</span>';
+      continue;
+    }
+    nums += '<button class="page-btn '+(i===page?'active':'')+'" data-testid="pageNumber-'+i+'" onclick="'+onGoto+'('+i+')">'+i+'</button>';
+  }
+  return '<div class="pagination-bar"><div class="page-info" data-testid="pagination-info">Showing '+(total===0?0:((page-1)*pageSize+1))+'–'+Math.min(page*pageSize,total)+' of '+total+'</div>'+
+    '<div class="page-controls">'+
+    '<button class="page-btn" id="previousPage" data-testid="previousPage" '+(page<=1?'disabled':'')+' onclick="'+onGoto+'('+(page-1)+')">‹ Prev</button>'+
+    nums+
+    '<button class="page-btn" id="nextPage" data-testid="nextPage" '+(page>=totalPages?'disabled':'')+' onclick="'+onGoto+'('+(page+1)+')">Next ›</button>'+
+    '</div></div>';
+}
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+function renderDashboard(content){
+  const emps = DB.employees;
+  const total = emps.length;
+  const active = emps.filter(e=>e.status==='Active').length;
+  const today = new Date().toISOString().slice(0,10);
+  const todaysAtt = DB.attendance.filter(a=>a.date===today);
+  const present = todaysAtt.filter(a=>a.status==='Present'||a.status==='Late').length;
+  const absent = todaysAtt.filter(a=>a.status==='Absent').length;
+  const onLeave = todaysAtt.filter(a=>a.status==='Leave').length;
+  const pendingLeaves = DB.leaves.filter(l=>l.status==='Pending').length;
+
+  const deptCounts = DEPT_LIST.map(d=>({name:d,count:emps.filter(e=>e.department===d).length}));
+  const maxDept = Math.max(1,...deptCounts.map(d=>d.count));
+  const attStatuses = [['Present',todaysAtt.filter(a=>a.status==='Present').length,'#16a34a'],
+    ['Absent',absent,'#dc2626'],['Late',todaysAtt.filter(a=>a.status==='Late').length,'#d97706'],['On Leave',onLeave,'#2563eb']];
+  const maxAtt = Math.max(1,...attStatuses.map(a=>a[1]));
+
+  const recentEmps = [...emps].sort((a,b)=>b.joiningDate.localeCompare(a.joiningDate)).slice(0,5);
+  const recentLeaves = [...DB.leaves].sort((a,b)=>b.appliedDate.localeCompare(a.appliedDate)).slice(0,5);
+
+  content.innerHTML = `
+  <div class="cards-grid" data-testid="dashboard-cards">
+    <div class="stat-card" data-testid="card-total-employees"><div class="ic">👥</div><div class="lbl">Total Employees</div><div class="val">${total}</div></div>
+    <div class="stat-card" data-testid="card-active-employees"><div class="ic">✅</div><div class="lbl">Active Employees</div><div class="val">${active}</div></div>
+    <div class="stat-card" data-testid="card-on-leave"><div class="ic">🌴</div><div class="lbl">On Leave</div><div class="val">${onLeave}</div></div>
+    <div class="stat-card" data-testid="card-present-today"><div class="ic">🟢</div><div class="lbl">Present Today</div><div class="val">${present}</div></div>
+    <div class="stat-card" data-testid="card-absent-today"><div class="ic">🔴</div><div class="lbl">Absent Today</div><div class="val">${absent}</div></div>
+    <div class="stat-card" data-testid="card-pending-leaves"><div class="ic">⏳</div><div class="lbl">Pending Leave Requests</div><div class="val">${pendingLeaves}</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel"><div class="panel-head"><h3>Employee Distribution</h3></div>
+      <div class="panel-body" data-testid="employee-distribution">
+        ${deptCounts.map(d=>`<div class="bar-row"><div class="bl">${d.name}</div><div class="bar-track"><div class="bar-fill" style="width:${(d.count/maxDept*100)}%;background:#2563eb"></div></div><div class="bv">${d.count}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="panel"><div class="panel-head"><h3>Attendance Overview (Today)</h3></div>
+      <div class="panel-body" data-testid="attendance-overview">
+        ${attStatuses.map(a=>`<div class="bar-row"><div class="bl">${a[0]}</div><div class="bar-track"><div class="bar-fill" style="width:${(a[1]/maxAtt*100)}%;background:${a[2]}"></div></div><div class="bv">${a[1]}</div></div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div class="panel"><div class="panel-head"><h3>Recent Employees</h3><a href="#/employees">View all</a></div>
+    <div class="table-wrap"><table class="data-table" data-testid="recent-employees-table"><thead><tr><th>Employee ID</th><th>Name</th><th>Department</th><th>Designation</th><th>Joining Date</th><th>Status</th></tr></thead>
+    <tbody>${recentEmps.map(e=>`<tr><td>${e.id}</td><td>${e.firstName} ${e.lastName}</td><td>${e.department}</td><td>${e.designation}</td><td>${e.joiningDate}</td><td>${statusBadge(e.status)}</td></tr>`).join('')}</tbody></table></div>
+  </div>
+
+  <div class="panel"><div class="panel-head"><h3>Recent Leave Requests</h3><a href="#/leave-management">View all</a></div>
+    <div class="table-wrap"><table class="data-table" data-testid="recent-leaves-table"><thead><tr><th>Employee</th><th>Leave Type</th><th>From</th><th>To</th><th>Status</th></tr></thead>
+    <tbody>${recentLeaves.map(l=>`<tr><td>${l.employeeName}</td><td>${l.leaveType}</td><td>${l.from}</td><td>${l.to}</td><td>${statusBadge(l.status)}</td></tr>`).join('')}</tbody></table></div>
+  </div>`;
+}
+
+/* =========================================================
+   EMPLOYEES
+========================================================= */
+let empState = {page:1,pageSize:10,search:'',dept:'',status:'',designation:'',sortCol:'id',sortDir:'asc'};
+function initEmpSearchFromHash(){
+  const q = location.hash.split('?')[1];
+  if(q){ const p = new URLSearchParams(q); if(p.get('q')) empState.search = p.get('q'); }
+}
+function renderEmployees(content){
+  initEmpSearchFromHash();
+  const allDesigs = [...new Set(DB.employees.map(e=>e.designation))].sort();
+  content.innerHTML = `
+  <div class="toolbar">
+    <div class="search-box grow"><span class="ic">🔍</span><input class="form-control" id="empSearch" data-testid="employee-search" placeholder="Search by ID, name or email" value="${esc(empState.search)}"></div>
+    <select class="form-control" id="empDeptFilter" data-testid="filter-department"><option value="">All Departments</option>${DEPT_LIST.map(d=>`<option ${empState.dept===d?'selected':''}>${d}</option>`).join('')}</select>
+    <select class="form-control" id="empStatusFilter" data-testid="filter-status"><option value="">All Status</option><option ${empState.status==='Active'?'selected':''}>Active</option><option ${empState.status==='Inactive'?'selected':''}>Inactive</option></select>
+    <select class="form-control" id="empDesigFilter" data-testid="filter-designation"><option value="">All Designations</option>${allDesigs.map(d=>`<option ${empState.designation===d?'selected':''}>${d}</option>`).join('')}</select>
+    <button class="btn btn-secondary" id="clearFilters" data-testid="clear-filters">Clear Filters</button>
+    ${canManage()?'<button class="btn btn-primary" id="addEmployeeBtn" data-testid="add-employee">+ Add Employee</button>':''}
+  </div>
+  <div class="panel"><div class="table-wrap"><table class="data-table" data-testid="employee-table">
+    <thead><tr>
+      <th data-testid="sort-id" onclick="empSort('id')">Employee ID</th><th>Profile</th>
+      <th data-testid="sort-name" onclick="empSort('firstName')">Employee Name</th><th>Email</th><th>Phone</th>
+      <th data-testid="sort-department" onclick="empSort('department')">Department</th><th>Designation</th>
+      <th data-testid="sort-joiningDate" onclick="empSort('joiningDate')">Joining Date</th><th>Status</th><th>Actions</th>
+    </tr></thead><tbody id="empTableBody"></tbody></table></div>
+    <div id="empPagination"></div>
+  </div>`;
+  document.getElementById('empSearch').oninput = e=>{ empState.search=e.target.value; empState.page=1; renderEmpTable(); };
+  document.getElementById('empDeptFilter').onchange = e=>{ empState.dept=e.target.value; empState.page=1; renderEmpTable(); };
+  document.getElementById('empStatusFilter').onchange = e=>{ empState.status=e.target.value; empState.page=1; renderEmpTable(); };
+  document.getElementById('empDesigFilter').onchange = e=>{ empState.designation=e.target.value; empState.page=1; renderEmpTable(); };
+  document.getElementById('clearFilters').onclick = ()=>{ empState={page:1,pageSize:empState.pageSize,search:'',dept:'',status:'',designation:'',sortCol:'id',sortDir:'asc'}; renderEmployees(content); };
+  if(canManage()) document.getElementById('addEmployeeBtn').onclick = ()=>openEmployeeForm();
+  renderEmpTable();
+}
+function canManage(){ return currentUser.role==='Admin'||currentUser.role==='HR'; }
+function empSort(col){
+  if(empState.sortCol===col) empState.sortDir = empState.sortDir==='asc'?'desc':'asc';
+  else { empState.sortCol=col; empState.sortDir='asc'; }
+  renderEmpTable();
+}
+function getFilteredEmployees(){
+  let list = DB.employees.slice();
+  if(currentUser.role==='Employee') list = list.filter(e=>e.id===currentUser.employeeId);
+  const s = empState.search.trim().toLowerCase();
+  if(s) list = list.filter(e=> e.id.toLowerCase().includes(s) || (e.firstName+' '+e.lastName).toLowerCase().includes(s) || e.email.toLowerCase().includes(s));
+  if(empState.dept) list = list.filter(e=>e.department===empState.dept);
+  if(empState.status) list = list.filter(e=>e.status===empState.status);
+  if(empState.designation) list = list.filter(e=>e.designation===empState.designation);
+  list.sort((a,b)=>{
+    let av=a[empState.sortCol], bv=b[empState.sortCol];
+    if(av<bv) return empState.sortDir==='asc'?-1:1;
+    if(av>bv) return empState.sortDir==='asc'?1:-1;
+    return 0;
+  });
+  return list;
+}
+function renderEmpTable(){
+  const list = getFilteredEmployees();
+  const total = list.length;
+  const totalPages = Math.max(1,Math.ceil(total/empState.pageSize));
+  if(empState.page>totalPages) empState.page = totalPages;
+  const pageItems = list.slice((empState.page-1)*empState.pageSize, empState.page*empState.pageSize);
+  const tbody = document.getElementById('empTableBody');
+  if(pageItems.length===0){
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state" data-testid="empty-state"><div class="ic">📭</div>No employees found matching your criteria.</div></td></tr>`;
+  } else {
+    tbody.innerHTML = pageItems.map(e=>`
+      <tr data-testid="employee-row-${e.id}">
+        <td>${e.id}</td>
+        <td><div class="mini-avatar">${initials(e.firstName+' '+e.lastName)}</div></td>
+        <td>${e.firstName} ${e.lastName}</td>
+        <td>${e.email}</td><td>${e.phone}</td><td>${e.department}</td><td>${e.designation}</td>
+        <td>${e.joiningDate}</td><td>${statusBadge(e.status)}</td>
+        <td><div class="action-icons">
+          <button class="act-btn" data-testid="view-employee-${e.id}" title="View" onclick="location.hash='#/employees/${e.id}'">👁</button>
+          ${canManage()?`<button class="act-btn" data-testid="edit-employee-${e.id}" title="Edit" onclick="openEmployeeForm('${e.id}')">✎</button>
+          <button class="act-btn danger" data-testid="delete-employee-${e.id}" title="Delete" onclick="deleteEmployee('${e.id}')">🗑</button>`:''}
+        </div></td>
+      </tr>`).join('');
+  }
+  document.getElementById('empPagination').innerHTML = paginationControls(total, empState.page, empState.pageSize, 'empGoto') +
+   `<div style="margin-top:8px"><label style="font-size:12px;color:#5b6472">Rows per page: <select class="rows-select" id="empPageSize" data-testid="rows-per-page"><option value="5" ${empState.pageSize==5?'selected':''}>5</option><option value="10" ${empState.pageSize==10?'selected':''}>10</option><option value="25" ${empState.pageSize==25?'selected':''}>25</option></select></label></div>`;
+  document.getElementById('empPageSize').onchange = e=>{ empState.pageSize=+e.target.value; empState.page=1; renderEmpTable(); };
+}
+function empGoto(p){ const list=getFilteredEmployees(); const tp=Math.max(1,Math.ceil(list.length/empState.pageSize)); if(p<1||p>tp) return; empState.page=p; renderEmpTable(); }
+
+function openEmployeeForm(id){
+  const editing = !!id;
+  const e = editing ? DB.employees.find(x=>x.id===id) : {};
+  const body = `
+  <form id="empForm" novalidate>
+    <div class="form-grid">
+      <div class="form-group"><label class="required" for="f_id">Employee ID</label><input class="form-control" id="f_id" data-testid="input-employeeId" value="${editing?e.id:''}" ${editing?'readonly':''}><div class="form-error" data-testid="error-employeeId" id="err_id"></div></div>
+      <div class="form-group"><label class="required" for="f_status">Status</label><select class="form-control" id="f_status" data-testid="input-status"><option ${e.status==='Active'?'selected':''}>Active</option><option ${e.status==='Inactive'?'selected':''}>Inactive</option></select></div>
+      <div class="form-group"><label class="required" for="f_fn">First Name</label><input class="form-control" id="f_fn" data-testid="input-firstName" value="${e.firstName||''}"><div class="form-error" id="err_fn">First name is required.</div></div>
+      <div class="form-group"><label class="required" for="f_ln">Last Name</label><input class="form-control" id="f_ln" data-testid="input-lastName" value="${e.lastName||''}"><div class="form-error" id="err_ln">Last name is required.</div></div>
+      <div class="form-group"><label class="required" for="f_email">Email</label><input class="form-control" id="f_email" data-testid="input-email" value="${e.email||''}"><div class="form-error" id="err_email">Enter a valid email.</div></div>
+      <div class="form-group"><label class="required" for="f_phone">Phone</label><input class="form-control" id="f_phone" data-testid="input-phone" placeholder="+91 9XXXXXXXXX" value="${e.phone||''}"><div class="form-error" id="err_phone">Enter a valid phone number.</div></div>
+      <div class="form-group"><label class="required" for="f_dob">Date of Birth</label><input type="date" class="form-control" id="f_dob" data-testid="input-dob" value="${e.dob||''}"><div class="form-error" id="err_dob">DOB is required.</div></div>
+      <div class="form-group"><label class="required" for="f_gender">Gender</label><select class="form-control" id="f_gender" data-testid="input-gender"><option value="">Select</option>${['Male','Female','Other'].map(g=>`<option ${e.gender===g?'selected':''}>${g}</option>`).join('')}</select><div class="form-error" id="err_gender">Gender is required.</div></div>
+      <div class="form-group"><label class="required" for="f_dept">Department</label><select class="form-control" id="f_dept" data-testid="input-department">${DEPT_LIST.map(d=>`<option ${e.department===d?'selected':''}>${d}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="required" for="f_desig">Designation</label><input class="form-control" id="f_desig" data-testid="input-designation" value="${e.designation||''}"><div class="form-error" id="err_desig">Designation is required.</div></div>
+      <div class="form-group"><label class="required" for="f_join">Joining Date</label><input type="date" class="form-control" id="f_join" data-testid="input-joiningDate" value="${e.joiningDate||''}"><div class="form-error" id="err_join">Enter a valid joining date.</div></div>
+      <div class="form-group"><label class="required" for="f_empType">Employment Type</label><select class="form-control" id="f_empType" data-testid="input-employmentType">${['Full Time','Part Time','Contract','Intern'].map(t=>`<option ${e.employmentType===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="required" for="f_salary">Salary</label><input class="form-control" id="f_salary" data-testid="input-salary" value="${e.salary||''}"><div class="form-error" id="err_salary">Salary must be a number.</div></div>
+      <div class="form-group full"><label class="required" for="f_addr">Address</label><input class="form-control" id="f_addr" data-testid="input-address" value="${e.address||''}"><div class="form-error" id="err_addr">Address is required.</div></div>
+      <div class="form-group"><label class="required" for="f_city">City</label><input class="form-control" id="f_city" data-testid="input-city" value="${e.city||''}"></div>
+      <div class="form-group"><label class="required" for="f_state">State</label><input class="form-control" id="f_state" data-testid="input-state" value="${e.state||''}"></div>
+      <div class="form-group"><label class="required" for="f_postal">Postal Code</label><input class="form-control" id="f_postal" data-testid="input-postalCode" value="${e.postalCode||''}"></div>
+      <div class="form-group"><label class="required" for="f_emerg">Emergency Contact</label><input class="form-control" id="f_emerg" data-testid="input-emergencyContact" value="${e.emergencyContact||''}"></div>
+    </div>
+  </form>`;
+  const foot = `<button class="btn btn-secondary" id="resetFormBtn" data-testid="reset-form">Reset</button>
+  <button class="btn btn-secondary" data-testid="cancel-form" onclick="closeModal()">Cancel</button>
+  <button class="btn btn-primary" id="saveEmpBtn" data-testid="save-employee">Save Employee</button>`;
+  openModal(editing?'Edit Employee':'Add Employee', body, foot, true);
+  document.getElementById('resetFormBtn').onclick = ()=> openEmployeeForm(id);
+  document.getElementById('saveEmpBtn').onclick = ()=> saveEmployee(id);
+}
+function saveEmployee(editingId){
+  const val = fid => document.getElementById(fid).value.trim();
+  document.querySelectorAll('#empForm .form-error').forEach(el=>el.classList.remove('show'));
+  let valid = true;
+  const idV = val('f_id'), fn=val('f_fn'), ln=val('f_ln'), email=val('f_email'), phone=val('f_phone'),
+    dob=val('f_dob'), gender=document.getElementById('f_gender').value, dept=document.getElementById('f_dept').value,
+    desig=val('f_desig'), join=val('f_join'), empType=document.getElementById('f_empType').value,
+    salary=val('f_salary'), addr=val('f_addr'), city=val('f_city'), state=val('f_state'), postal=val('f_postal'), emerg=val('f_emerg'), status=document.getElementById('f_status').value;
+
+  function fail(id,msg){ const el=document.getElementById(id); if(msg) el.textContent=msg; el.classList.add('show'); valid=false; }
+  if(!idV) fail('err_id','Employee ID is required.');
+  else if(!editingId && DB.employees.some(e=>e.id.toLowerCase()===idV.toLowerCase())) fail('err_id','Duplicate Employee ID.');
+  if(!fn) fail('err_fn');
+  if(!ln) fail('err_ln');
+  const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!email || !emailRe.test(email)) fail('err_email','Invalid email address.');
+  else if(DB.employees.some(e=>e.email.toLowerCase()===email.toLowerCase() && e.id!==editingId)) fail('err_email','Duplicate email address.');
+  const phoneRe=/^[+0-9 ]{8,15}$/;
+  if(!phone || !phoneRe.test(phone)) fail('err_phone');
+  if(!dob) fail('err_dob');
+  if(!gender) fail('err_gender');
+  if(!desig) fail('err_desig');
+  if(!join) fail('err_join');
+  if(!salary || isNaN(Number(salary))) fail('err_salary');
+  if(!addr) fail('err_addr');
+  if(!valid){ toast('Please fix the highlighted errors.','error'); return; }
+
+  const rec = {id:idV,firstName:fn,lastName:ln,email,phone,dob,gender,department:dept,designation:desig,
+    joiningDate:join,employmentType:empType,salary:Number(salary),address:addr,city,state,postalCode:postal,emergencyContact:emerg,status};
+  if(editingId){
+    const idx = DB.employees.findIndex(e=>e.id===editingId);
+    DB.employees[idx] = rec;
+    toast('Employee details updated successfully.','success');
+  } else {
+    DB.employees.push(rec);
+    toast('Employee created successfully.','success');
+  }
+  saveDB(); closeModal(); render();
+}
+function deleteEmployee(id){
+  showConfirm('Delete Employee','Are you sure you want to delete this employee?', ()=>{
+    DB.employees = DB.employees.filter(e=>e.id!==id);
+    saveDB(); closeConfirm(); toast('Employee deleted successfully.','success'); render();
+  }, {confirmLabel:'Delete'});
+}
+
+let empDetailTab = 'overview';
+function renderEmployeeDetail(content, id){
+  const e = DB.employees.find(x=>x.id===id);
+  if(!e){ content.innerHTML = '<div class="empty-state">Employee not found.</div>'; return; }
+  const att = DB.attendance.filter(a=>a.employeeId===id).slice(-10).reverse();
+  const lvs = DB.leaves.filter(l=>l.employeeId===id);
+  content.innerHTML = `
+  <button class="btn btn-secondary btn-sm" style="margin-bottom:14px" data-testid="back-to-employees" onclick="location.hash='#/employees'">‹ Back to Employees</button>
+  <div class="panel"><div class="panel-body">
+    <div class="detail-header">
+      <div class="detail-id-row"><div class="big-avatar">${initials(e.firstName+' '+e.lastName)}</div>
+        <div><h2 data-testid="detail-name">${e.firstName} ${e.lastName}</h2><div style="color:#5b6472">${e.designation} · ${e.department} · <span data-testid="detail-id">${e.id}</span></div></div>
+      </div>
+      <div>${statusBadge(e.status)} ${canManage()?`<button class="btn btn-primary btn-sm" data-testid="edit-employee-detail" onclick="openEmployeeForm('${e.id}')">Edit Employee</button>`:''}</div>
+    </div>
+    <div class="tabs-bar" data-testid="employee-tabs">
+      <button class="tab-btn active" data-testid="tab-overview" onclick="switchEmpTab('overview')">Overview</button>
+      <button class="tab-btn" data-testid="tab-attendance" onclick="switchEmpTab('attendance')">Attendance</button>
+      <button class="tab-btn" data-testid="tab-leave" onclick="switchEmpTab('leave')">Leave</button>
+      <button class="tab-btn" data-testid="tab-documents" onclick="switchEmpTab('documents')">Documents</button>
+    </div>
+    <div id="tab-pane-overview" class="tab-pane active">
+      <div class="section-title">Personal Information</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="lb">Employee ID</div><div class="vl">${e.id}</div></div>
+        <div class="info-item"><div class="lb">Email</div><div class="vl">${e.email}</div></div>
+        <div class="info-item"><div class="lb">Phone</div><div class="vl">${e.phone}</div></div>
+        <div class="info-item"><div class="lb">DOB</div><div class="vl">${e.dob}</div></div>
+        <div class="info-item"><div class="lb">Gender</div><div class="vl">${e.gender}</div></div>
+      </div>
+      <div class="section-title">Employment Information</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="lb">Department</div><div class="vl">${e.department}</div></div>
+        <div class="info-item"><div class="lb">Designation</div><div class="vl">${e.designation}</div></div>
+        <div class="info-item"><div class="lb">Joining Date</div><div class="vl">${e.joiningDate}</div></div>
+        <div class="info-item"><div class="lb">Employment Type</div><div class="vl">${e.employmentType}</div></div>
+        <div class="info-item"><div class="lb">Salary</div><div class="vl">${fmtMoney(e.salary)}</div></div>
+        <div class="info-item"><div class="lb">Status</div><div class="vl">${e.status}</div></div>
+      </div>
+      <div class="section-title">Contact Information</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="lb">Address</div><div class="vl">${e.address}</div></div>
+        <div class="info-item"><div class="lb">City</div><div class="vl">${e.city}</div></div>
+        <div class="info-item"><div class="lb">State</div><div class="vl">${e.state}</div></div>
+        <div class="info-item"><div class="lb">Postal Code</div><div class="vl">${e.postalCode}</div></div>
+      </div>
+    </div>
+    <div id="tab-pane-attendance" class="tab-pane">
+      <table class="data-table"><thead><tr><th>Date</th><th>Check In</th><th>Check Out</th><th>Working Hours</th><th>Status</th></tr></thead>
+      <tbody>${att.length?att.map(a=>`<tr><td>${a.date}</td><td>${a.checkIn}</td><td>${a.checkOut}</td><td>${a.workingHours}</td><td>${statusBadge(a.status)}</td></tr>`).join(''):'<tr><td colspan="5"><div class="empty-state">No attendance records.</div></td></tr>'}</tbody></table>
+    </div>
+    <div id="tab-pane-leave" class="tab-pane">
+      <table class="data-table"><thead><tr><th>Leave Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th></tr></thead>
+      <tbody>${lvs.length?lvs.map(l=>`<tr><td>${l.leaveType}</td><td>${l.from}</td><td>${l.to}</td><td>${l.days}</td><td>${statusBadge(l.status)}</td></tr>`).join(''):'<tr><td colspan="5"><div class="empty-state">No leave records.</div></td></tr>'}</tbody></table>
+    </div>
+    <div id="tab-pane-documents" class="tab-pane"><div class="empty-state" data-testid="empty-documents"><div class="ic">📄</div>No documents uploaded yet.</div></div>
+  </div></div>`;
+}
+function switchEmpTab(tab){
+  document.querySelectorAll('.tabs-bar .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-testid="tab-'+tab+'"]').classList.add('active');
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-pane-'+tab).classList.add('active');
+}
+
+/* =========================================================
+   DEPARTMENTS
+========================================================= */
+let deptState={page:1,pageSize:10,search:'',status:''};
+function renderDepartments(content){
+  content.innerHTML = `
+  <div class="toolbar">
+    <div class="search-box grow"><span class="ic">🔍</span><input class="form-control" id="deptSearch" data-testid="department-search" placeholder="Search department"></div>
+    <select class="form-control" id="deptStatusFilter" data-testid="department-status-filter"><option value="">All Status</option><option>Active</option><option>Inactive</option></select>
+    <button class="btn btn-secondary" id="deptClearFilters" data-testid="department-clear-filters">Clear Filter</button>
+    ${canManage()?'<button class="btn btn-primary" id="addDeptBtn" data-testid="add-department">+ Add Department</button>':''}
+  </div>
+  <div class="panel"><div class="table-wrap"><table class="data-table" data-testid="department-table">
+    <thead><tr><th>Department ID</th><th>Department Name</th><th>Department Head</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody id="deptTableBody"></tbody></table></div><div id="deptPagination"></div></div>`;
+  document.getElementById('deptSearch').oninput = e=>{ deptState.search=e.target.value; deptState.page=1; renderDeptTable(); };
+  document.getElementById('deptStatusFilter').onchange = e=>{ deptState.status=e.target.value; deptState.page=1; renderDeptTable(); };
+  document.getElementById('deptClearFilters').onclick = ()=>{ deptState={page:1,pageSize:10,search:'',status:''}; renderDepartments(content); };
+  if(canManage()) document.getElementById('addDeptBtn').onclick = ()=>openDeptForm();
+  renderDeptTable();
+}
+function getFilteredDepts(){
+  let list = DB.departments.slice();
+  const s = deptState.search.trim().toLowerCase();
+  if(s) list = list.filter(d=>d.name.toLowerCase().includes(s)||d.id.toLowerCase().includes(s));
+  if(deptState.status) list = list.filter(d=>d.status===deptState.status);
+  return list;
+}
+function renderDeptTable(){
+  const list = getFilteredDepts();
+  const total = list.length;
+  const tp = Math.max(1,Math.ceil(total/deptState.pageSize));
+  if(deptState.page>tp) deptState.page=tp;
+  const items = list.slice((deptState.page-1)*deptState.pageSize, deptState.page*deptState.pageSize);
+  const empCount = d=>DB.employees.filter(e=>e.department===d).length;
+  document.getElementById('deptTableBody').innerHTML = items.length? items.map(d=>`
+    <tr data-testid="department-row-${d.id}"><td>${d.id}</td><td>${d.name} <span class="badge badge-gray">${empCount(d.name)} emp</span></td><td>${d.head}</td><td>${d.description}</td><td>${statusBadge(d.status)}</td>
+    <td><div class="action-icons">
+      ${canManage()?`<button class="act-btn" data-testid="edit-department-${d.id}" onclick="openDeptForm('${d.id}')">✎</button>
+      <button class="act-btn danger" data-testid="delete-department-${d.id}" onclick="deleteDept('${d.id}')">🗑</button>`:'-'}
+    </div></td></tr>`).join('') : `<tr><td colspan="6"><div class="empty-state" data-testid="department-empty-state">No departments found.</div></td></tr>`;
+  document.getElementById('deptPagination').innerHTML = paginationControls(total, deptState.page, deptState.pageSize, 'deptGoto');
+}
+function deptGoto(p){ const list=getFilteredDepts(); const tp=Math.max(1,Math.ceil(list.length/deptState.pageSize)); if(p<1||p>tp) return; deptState.page=p; renderDeptTable(); }
+function openDeptForm(id){
+  const editing=!!id; const d = editing?DB.departments.find(x=>x.id===id):{};
+  const body = `<form id="deptForm">
+    <div class="form-group"><label class="required" for="d_id">Department ID</label><input class="form-control" id="d_id" data-testid="input-deptId" value="${editing?d.id:'DEPT'+pad(DB.departments.length+1,3)}" ${editing?'readonly':'readonly'}></div>
+    <div class="form-group"><label class="required" for="d_name">Department Name</label><input class="form-control" id="d_name" data-testid="input-deptName" value="${d.name||''}"><div class="form-error" id="err_dname">Department name is required / already exists.</div></div>
+    <div class="form-group"><label class="required" for="d_head">Department Head</label><input class="form-control" id="d_head" data-testid="input-deptHead" value="${d.head||''}"><div class="form-error" id="err_dhead">Department head is required.</div></div>
+    <div class="form-group"><label for="d_desc">Description</label><textarea class="form-control" id="d_desc" data-testid="input-deptDescription" rows="3">${d.description||''}</textarea></div>
+    <div class="form-group"><label class="required" for="d_status">Status</label><select class="form-control" id="d_status" data-testid="input-deptStatus"><option ${d.status==='Active'?'selected':''}>Active</option><option ${d.status==='Inactive'?'selected':''}>Inactive</option></select></div>
+  </form>`;
+  const foot = `<button class="btn btn-secondary" data-testid="cancel-department-form" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="saveDeptBtn" data-testid="save-department">Save Department</button>`;
+  openModal(editing?'Edit Department':'Add Department', body, foot);
+  document.getElementById('saveDeptBtn').onclick = ()=>saveDept(id);
+}
+function saveDept(editingId){
+  document.querySelectorAll('#deptForm .form-error').forEach(e=>e.classList.remove('show'));
+  const name = document.getElementById('d_name').value.trim();
+  const head = document.getElementById('d_head').value.trim();
+  let valid=true;
+  if(!name || DB.departments.some(d=>d.name.toLowerCase()===name.toLowerCase() && d.id!==editingId)){ document.getElementById('err_dname').classList.add('show'); valid=false; }
+  if(!head){ document.getElementById('err_dhead').classList.add('show'); valid=false; }
+  if(!valid){ toast('Please fix the highlighted errors.','error'); return; }
+  const rec = {id:document.getElementById('d_id').value, name, head, description:document.getElementById('d_desc').value.trim(), status:document.getElementById('d_status').value};
+  if(editingId){ const idx=DB.departments.findIndex(d=>d.id===editingId); DB.departments[idx]=rec; toast('Department updated successfully.','success'); }
+  else { DB.departments.push(rec); toast('Department created successfully.','success'); }
+  saveDB(); closeModal(); render();
+}
+function deleteDept(id){
+  showConfirm('Delete Department','Are you sure you want to delete this department?', ()=>{
+    DB.departments = DB.departments.filter(d=>d.id!==id); saveDB(); closeConfirm(); toast('Department deleted successfully.','success'); render();
+  },{confirmLabel:'Delete'});
+}
+
+/* =========================================================
+   ATTENDANCE
+========================================================= */
+let attState={page:1,pageSize:10,search:'',dept:'',status:'',date:'',from:'',to:''};
+function renderAttendance(content){
+  content.innerHTML = `
+  <div class="toolbar">
+    <div class="search-box grow"><span class="ic">🔍</span><input class="form-control" id="attSearch" data-testid="attendance-search" placeholder="Search employee"></div>
+    <select class="form-control" id="attDeptFilter" data-testid="attendance-department-filter"><option value="">All Departments</option>${DEPT_LIST.map(d=>`<option>${d}</option>`).join('')}</select>
+    <select class="form-control" id="attStatusFilter" data-testid="attendance-status-filter"><option value="">All Status</option>${['Present','Absent','Late','Half Day','Leave'].map(s=>`<option>${s}</option>`).join('')}</select>
+    <input type="date" class="form-control" id="attDateFilter" data-testid="attendance-date-filter">
+    <input type="date" class="form-control" id="attFromFilter" data-testid="attendance-from-date" title="From">
+    <input type="date" class="form-control" id="attToFilter" data-testid="attendance-to-date" title="To">
+    <button class="btn btn-secondary" id="attClearFilters" data-testid="attendance-clear-filters">Clear Filter</button>
+    ${canManage()?'<button class="btn btn-primary" id="markAttBtn" data-testid="mark-attendance">+ Mark Attendance</button>':''}
+  </div>
+  <div class="panel"><div class="table-wrap"><table class="data-table" data-testid="attendance-table">
+    <thead><tr><th>Employee ID</th><th>Employee Name</th><th>Department</th><th>Date</th><th>Check In</th><th>Check Out</th><th>Working Hours</th><th>Status</th></tr></thead>
+    <tbody id="attTableBody"></tbody></table></div><div id="attPagination"></div></div>`;
+  const bind = (id,field)=>document.getElementById(id).addEventListener(id.includes('Filter')&&id.includes('Date')?'change':'input', e=>{ attState[field]=e.target.value; attState.page=1; renderAttTable(); });
+  bind('attSearch','search'); bind('attDeptFilter','dept'); bind('attStatusFilter','status'); bind('attDateFilter','date'); bind('attFromFilter','from'); bind('attToFilter','to');
+  document.getElementById('attClearFilters').onclick = ()=>{ attState={page:1,pageSize:10,search:'',dept:'',status:'',date:'',from:'',to:''}; renderAttendance(content); };
+  if(canManage()) document.getElementById('markAttBtn').onclick = openAttForm;
+  renderAttTable();
+}
+function getFilteredAtt(){
+  let list = DB.attendance.slice();
+  if(currentUser.role==='Employee') list = list.filter(a=>a.employeeId===currentUser.employeeId);
+  const s = attState.search.trim().toLowerCase();
+  if(s) list = list.filter(a=>a.employeeId.toLowerCase().includes(s)||a.employeeName.toLowerCase().includes(s));
+  if(attState.dept) list = list.filter(a=>a.department===attState.dept);
+  if(attState.status) list = list.filter(a=>a.status===attState.status);
+  if(attState.date) list = list.filter(a=>a.date===attState.date);
+  if(attState.from) list = list.filter(a=>a.date>=attState.from);
+  if(attState.to) list = list.filter(a=>a.date<=attState.to);
+  list.sort((a,b)=>b.date.localeCompare(a.date));
+  return list;
+}
+function renderAttTable(){
+  const list = getFilteredAtt(); const total=list.length; const tp=Math.max(1,Math.ceil(total/attState.pageSize));
+  if(attState.page>tp) attState.page=tp;
+  const items = list.slice((attState.page-1)*attState.pageSize, attState.page*attState.pageSize);
+  document.getElementById('attTableBody').innerHTML = items.length? items.map(a=>`
+    <tr data-testid="attendance-row-${a.id}"><td>${a.employeeId}</td><td>${a.employeeName}</td><td>${a.department}</td><td>${a.date}</td><td>${a.checkIn}</td><td>${a.checkOut}</td><td>${a.workingHours}</td><td>${statusBadge(a.status)}</td></tr>
+  `).join('') : `<tr><td colspan="8"><div class="empty-state" data-testid="attendance-empty-state">No attendance records found.</div></td></tr>`;
+  document.getElementById('attPagination').innerHTML = paginationControls(total, attState.page, attState.pageSize, 'attGoto');
+}
+function attGoto(p){ const list=getFilteredAtt(); const tp=Math.max(1,Math.ceil(list.length/attState.pageSize)); if(p<1||p>tp) return; attState.page=p; renderAttTable(); }
+function openAttForm(){
+  const active = DB.employees.filter(e=>e.status==='Active');
+  const body = `<form id="attForm">
+    <div class="form-group"><label class="required" for="a_emp">Employee</label><select class="form-control" id="a_emp" data-testid="input-attEmployee">${active.map(e=>`<option value="${e.id}">${e.id} - ${e.firstName} ${e.lastName}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="required" for="a_date">Date</label><input type="date" class="form-control" id="a_date" data-testid="input-attDate" value="${new Date().toISOString().slice(0,10)}"><div class="form-error" id="err_adate">Attendance for this employee and date already exists.</div></div>
+    <div class="form-group"><label for="a_in">Check In</label><input type="time" class="form-control" id="a_in" data-testid="input-checkIn" value="09:00"></div>
+    <div class="form-group"><label for="a_out">Check Out</label><input type="time" class="form-control" id="a_out" data-testid="input-checkOut" value="18:00"></div>
+    <div class="form-group"><label class="required" for="a_status">Status</label><select class="form-control" id="a_status" data-testid="input-attStatus">${['Present','Absent','Late','Half Day','Leave'].map(s=>`<option>${s}</option>`).join('')}</select></div>
+  </form>`;
+  const foot = `<button class="btn btn-secondary" data-testid="cancel-attendance-form" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="saveAttBtn" data-testid="save-attendance">Save Attendance</button>`;
+  openModal('Mark Attendance', body, foot);
+  document.getElementById('saveAttBtn').onclick = saveAtt;
+}
+function saveAtt(){
+  document.getElementById('err_adate').classList.remove('show');
+  const empId = document.getElementById('a_emp').value, date=document.getElementById('a_date').value;
+  if(DB.attendance.some(a=>a.employeeId===empId && a.date===date)){ document.getElementById('err_adate').classList.add('show'); toast('Attendance already marked for this employee on this date.','error'); return; }
+  const cin = document.getElementById('a_in').value, cout=document.getElementById('a_out').value, status=document.getElementById('a_status').value;
+  let hrs='0';
+  if(cin && cout && status!=='Absent' && status!=='Leave'){
+    const [h1,m1]=cin.split(':').map(Number), [h2,m2]=cout.split(':').map(Number);
+    hrs = Math.max(0,((h2*60+m2)-(h1*60+m1))/60).toFixed(1);
+  }
+  DB.attendance.push({id:'ATT'+pad(DB.attendance.length+1,5),employeeId:empId,employeeName:empName(empId),department:DB.employees.find(e=>e.id===empId).department,date,checkIn:status==='Absent'||status==='Leave'?'-':cin,checkOut:status==='Absent'||status==='Leave'?'-':cout,workingHours:hrs,status});
+  saveDB(); closeModal(); toast('Attendance marked successfully.','success'); render();
+}
+
+/* =========================================================
+   LEAVE MANAGEMENT
+========================================================= */
+let lvState={page:1,pageSize:10,search:'',type:'',status:''};
+function renderLeaves(content){
+  content.innerHTML = `
+  <div class="toolbar">
+    <div class="search-box grow"><span class="ic">🔍</span><input class="form-control" id="lvSearch" data-testid="leave-search" placeholder="Search employee"></div>
+    <select class="form-control" id="lvTypeFilter" data-testid="leave-type-filter"><option value="">All Leave Types</option>${['Casual Leave','Sick Leave','Earned Leave','Emergency Leave','Unpaid Leave'].map(t=>`<option>${t}</option>`).join('')}</select>
+    <select class="form-control" id="lvStatusFilter" data-testid="leave-status-filter"><option value="">All Status</option>${['Pending','Approved','Rejected','Cancelled'].map(s=>`<option>${s}</option>`).join('')}</select>
+    <button class="btn btn-secondary" id="lvClearFilters" data-testid="leave-clear-filters">Clear Filter</button>
+    <button class="btn btn-primary" id="applyLeaveBtn" data-testid="apply-leave">+ Apply Leave</button>
+  </div>
+  <div class="panel"><div class="table-wrap"><table class="data-table" data-testid="leave-table">
+    <thead><tr><th>Leave ID</th><th>Employee</th><th>Department</th><th>Leave Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Applied Date</th><th data-testid="leave-status-col">Status</th><th>Actions</th></tr></thead>
+    <tbody id="lvTableBody"></tbody></table></div><div id="lvPagination"></div></div>`;
+  document.getElementById('lvSearch').oninput = e=>{ lvState.search=e.target.value; lvState.page=1; renderLvTable(); };
+  document.getElementById('lvTypeFilter').onchange = e=>{ lvState.type=e.target.value; lvState.page=1; renderLvTable(); };
+  document.getElementById('lvStatusFilter').onchange = e=>{ lvState.status=e.target.value; lvState.page=1; renderLvTable(); };
+  document.getElementById('lvClearFilters').onclick = ()=>{ lvState={page:1,pageSize:10,search:'',type:'',status:''}; renderLeaves(content); };
+  document.getElementById('applyLeaveBtn').onclick = openLeaveForm;
+  renderLvTable();
+}
+function getFilteredLeaves(){
+  let list = DB.leaves.slice();
+  if(currentUser.role==='Employee') list = list.filter(l=>l.employeeId===currentUser.employeeId);
+  const s = lvState.search.trim().toLowerCase();
+  if(s) list = list.filter(l=>l.employeeName.toLowerCase().includes(s)||l.employeeId.toLowerCase().includes(s));
+  if(lvState.type) list = list.filter(l=>l.leaveType===lvState.type);
+  if(lvState.status) list = list.filter(l=>l.status===lvState.status);
+  list.sort((a,b)=>b.appliedDate.localeCompare(a.appliedDate));
+  return list;
+}
+function renderLvTable(){
+  const list=getFilteredLeaves(); const total=list.length; const tp=Math.max(1,Math.ceil(total/lvState.pageSize));
+  if(lvState.page>tp) lvState.page=tp;
+  const items = list.slice((lvState.page-1)*lvState.pageSize, lvState.page*lvState.pageSize);
+  document.getElementById('lvTableBody').innerHTML = items.length? items.map(l=>`
+    <tr data-testid="leave-row-${l.id}"><td>${l.id}</td><td>${l.employeeName}</td><td>${l.department}</td><td>${l.leaveType}</td><td>${l.from}</td><td>${l.to}</td><td>${l.days}</td><td>${esc(l.reason)}</td><td>${l.appliedDate}</td><td data-testid="leave-status-${l.id}">${statusBadge(l.status)}</td>
+    <td><div class="action-icons">
+      <button class="act-btn" data-testid="view-leave-${l.id}" onclick="viewLeave('${l.id}')">👁</button>
+      ${(canManage() && l.status==='Pending')?`<button class="act-btn" data-testid="approve-leave-${l.id}" title="Approve" onclick="approveLeave('${l.id}')">✔</button>
+      <button class="act-btn danger" data-testid="reject-leave-${l.id}" title="Reject" onclick="rejectLeave('${l.id}')">✘</button>`:''}
+    </div></td></tr>`).join('') : `<tr><td colspan="11"><div class="empty-state" data-testid="leave-empty-state">No leave requests found.</div></td></tr>`;
+  document.getElementById('lvPagination').innerHTML = paginationControls(total, lvState.page, lvState.pageSize, 'lvGoto');
+}
+function lvGoto(p){ const list=getFilteredLeaves(); const tp=Math.max(1,Math.ceil(list.length/lvState.pageSize)); if(p<1||p>tp) return; lvState.page=p; renderLvTable(); }
+function viewLeave(id){
+  const l = DB.leaves.find(x=>x.id===id);
+  const body = `<div class="info-grid">
+    <div class="info-item"><div class="lb">Employee</div><div class="vl">${l.employeeName}</div></div>
+    <div class="info-item"><div class="lb">Department</div><div class="vl">${l.department}</div></div>
+    <div class="info-item"><div class="lb">Leave Type</div><div class="vl">${l.leaveType}</div></div>
+    <div class="info-item"><div class="lb">Status</div><div class="vl">${statusBadge(l.status)}</div></div>
+    <div class="info-item"><div class="lb">From</div><div class="vl">${l.from}</div></div>
+    <div class="info-item"><div class="lb">To</div><div class="vl">${l.to}</div></div>
+    <div class="info-item"><div class="lb">Days</div><div class="vl">${l.days}</div></div>
+    <div class="info-item"><div class="lb">Applied Date</div><div class="vl">${l.appliedDate}</div></div>
+  </div><div class="section-title">Reason</div><p>${esc(l.reason)}</p>
+  ${l.rejectionReason?`<div class="section-title">Rejection Reason</div><p>${esc(l.rejectionReason)}</p>`:''}`;
+  openModal('Leave Request Details', body, `<button class="btn btn-secondary" data-testid="close-leave-view" onclick="closeModal()">Close</button>`);
+}
+function approveLeave(id){
+  showConfirm('Approve Leave Request','Are you sure you want to approve this leave request?', ()=>{
+    const l = DB.leaves.find(x=>x.id===id); l.status='Approved';
+    saveDB(); closeConfirm(); toast('Leave request approved successfully.','success'); render();
+  },{confirmLabel:'Approve',danger:false});
+}
+function rejectLeave(id){
+  showConfirm('Reject Leave Request','Please provide a reason for rejecting this leave request.', (reason)=>{
+    const l = DB.leaves.find(x=>x.id===id); l.status='Rejected'; l.rejectionReason=reason;
+    saveDB(); closeConfirm(); toast('Leave request rejected successfully.','success'); render();
+  },{confirmLabel:'Reject',needReason:true});
+}
+function openLeaveForm(){
+  const isEmployee = currentUser.role==='Employee';
+  const empOptions = isEmployee ? `<option value="${currentUser.employeeId}">${empName(currentUser.employeeId)}</option>` :
+    DB.employees.filter(e=>e.status==='Active').map(e=>`<option value="${e.id}">${e.id} - ${e.firstName} ${e.lastName}</option>`).join('');
+  const body = `<form id="lvForm">
+    <div class="form-group"><label class="required" for="l_emp">Employee</label><select class="form-control" id="l_emp" data-testid="input-leaveEmployee" ${isEmployee?'disabled':''}>${empOptions}</select></div>
+    <div class="form-group"><label class="required" for="l_type">Leave Type</label><select class="form-control" id="l_type" data-testid="input-leaveType">${['Casual Leave','Sick Leave','Earned Leave','Emergency Leave','Unpaid Leave'].map(t=>`<option>${t}</option>`).join('')}</select></div>
+    <div class="form-grid">
+      <div class="form-group"><label class="required" for="l_from">From Date</label><input type="date" class="form-control" id="l_from" data-testid="input-leaveFrom"></div>
+      <div class="form-group"><label class="required" for="l_to">To Date</label><input type="date" class="form-control" id="l_to" data-testid="input-leaveTo"></div>
+    </div>
+    <div class="form-error" id="err_ldate">From date cannot be later than To date.</div>
+    <div class="form-group" style="margin-top:10px"><label class="required" for="l_reason">Reason</label><textarea class="form-control" id="l_reason" data-testid="input-leaveReason" rows="3"></textarea><div class="form-error" id="err_lreason">Reason is required.</div></div>
+  </form>`;
+  const foot = `<button class="btn btn-secondary" data-testid="cancel-leave-form" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="saveLeaveBtn" data-testid="submit-leave">Submit Leave</button>`;
+  openModal('Apply Leave', body, foot);
+  document.getElementById('saveLeaveBtn').onclick = ()=>{
+    const empId = isEmployee?currentUser.employeeId:document.getElementById('l_emp').value;
+    const type = document.getElementById('l_type').value, from=document.getElementById('l_from').value, to=document.getElementById('l_to').value, reason=document.getElementById('l_reason').value.trim();
+    document.getElementById('err_ldate').classList.remove('show'); document.getElementById('err_lreason').classList.remove('show');
+    let valid=true;
+    if(!from||!to||from>to){ document.getElementById('err_ldate').classList.add('show'); valid=false; }
+    if(!reason){ document.getElementById('err_lreason').classList.add('show'); valid=false; }
+    if(!valid){ toast('Please fix the highlighted errors.','error'); return; }
+    const days = Math.round((new Date(to)-new Date(from))/86400000)+1;
+    DB.leaves.push({id:'LV'+pad(DB.leaves.length+2001,4),employeeId:empId,employeeName:empName(empId),department:DB.employees.find(e=>e.id===empId).department,
+      leaveType:type,from,to,days,reason,appliedDate:new Date().toISOString().slice(0,10),status:'Pending',rejectionReason:''});
+    saveDB(); closeModal(); toast('Leave request submitted successfully.','success'); render();
+  };
+}
+
+/* =========================================================
+   USERS & ROLES
+========================================================= */
+function renderUsers(content){
+  content.innerHTML = `
+  <div class="toolbar"><div class="grow"></div><button class="btn btn-primary" id="addUserBtn" data-testid="add-user">+ Add User</button></div>
+  <div class="panel"><div class="table-wrap"><table class="data-table" data-testid="users-table">
+    <thead><tr><th>Name</th><th>Username / Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${DB.users.map((u,i)=>`
+      <tr data-testid="user-row-${i}"><td>${u.name}</td><td>${u.username}</td><td><span class="badge badge-blue">${u.role}</span></td><td>${statusBadge(u.status)}</td>
+      <td><div class="action-icons">
+        <button class="act-btn" data-testid="edit-user-${i}" onclick="openUserForm(${i})">✎</button>
+        <button class="act-btn danger" data-testid="delete-user-${i}" onclick="deleteUser(${i})">🗑</button>
+      </div></td></tr>`).join('')}</tbody>
+  </table></div></div>`;
+  document.getElementById('addUserBtn').onclick = ()=>openUserForm();
+}
+function openUserForm(idx){
+  const editing = idx!==undefined; const u = editing?DB.users[idx]:{};
+  const body = `<form id="userForm">
+    <div class="form-group"><label class="required" for="u_name">Name</label><input class="form-control" id="u_name" data-testid="input-userName" value="${u.name||''}"></div>
+    <div class="form-group"><label class="required" for="u_email">Username / Email</label><input class="form-control" id="u_email" data-testid="input-userEmail" value="${u.username||''}"><div class="form-error" id="err_uemail">Enter a valid, unique email.</div></div>
+    <div class="form-group"><label class="required" for="u_role">Role</label><select class="form-control" id="u_role" data-testid="input-userRole">${['Admin','HR','Employee'].map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="required" for="u_status">Status</label><select class="form-control" id="u_status" data-testid="input-userStatus"><option ${u.status==='Active'?'selected':''}>Active</option><option ${u.status==='Inactive'?'selected':''}>Inactive</option></select></div>
+  </form>`;
+  const foot = `<button class="btn btn-secondary" data-testid="cancel-user-form" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="saveUserBtn" data-testid="save-user">Save User</button>`;
+  openModal(editing?'Edit User':'Add User', body, foot);
+  document.getElementById('saveUserBtn').onclick = ()=>{
+    const email = document.getElementById('u_email').value.trim();
+    const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRe.test(email) || DB.users.some((x,i)=>x.username.toLowerCase()===email.toLowerCase() && i!==idx)){ document.getElementById('err_uemail').classList.add('show'); return; }
+    const rec = {username:email,password:editing?u.password:'Welcome@123',name:document.getElementById('u_name').value.trim(),role:document.getElementById('u_role').value,status:document.getElementById('u_status').value,employeeId:editing?u.employeeId:null};
+    if(editing) DB.users[idx]=rec; else DB.users.push(rec);
+    saveDB(); closeModal(); toast('User '+(editing?'updated':'created')+' successfully.','success'); render();
+  };
+}
+function deleteUser(idx){
+  showConfirm('Delete User','Are you sure you want to delete this user?', ()=>{
+    DB.users.splice(idx,1); saveDB(); closeConfirm(); toast('User deleted successfully.','success'); render();
+  },{confirmLabel:'Delete'});
+}
+
+/* =========================================================
+   REPORTS
+========================================================= */
+let reportTab='employee';
+function renderReports(content){
+  content.innerHTML = `
+  <div class="link-tab" data-testid="report-tabs">
+    <button class="active" data-testid="report-tab-employee" onclick="setReportTab('employee')">Employee Report</button>
+    <button data-testid="report-tab-attendance" onclick="setReportTab('attendance')">Attendance Report</button>
+    <button data-testid="report-tab-leave" onclick="setReportTab('leave')">Leave Report</button>
+  </div>
+  <div id="reportArea"></div>`;
+  drawReport();
+}
+function setReportTab(t){ reportTab=t; document.querySelectorAll('.link-tab button').forEach(b=>b.classList.remove('active')); document.querySelector('[data-testid="report-tab-'+t+'"]').classList.add('active'); drawReport(); }
+function drawReport(){
+  const area = document.getElementById('reportArea');
+  if(reportTab==='employee'){
+    area.innerHTML = `<div class="panel"><div class="panel-body toolbar">
+      <select class="form-control" id="rf_dept" data-testid="report-filter-department"><option value="">All Departments</option>${DEPT_LIST.map(d=>`<option>${d}</option>`).join('')}</select>
+      <select class="form-control" id="rf_status" data-testid="report-filter-status"><option value="">All Status</option><option>Active</option><option>Inactive</option></select>
+      <input type="date" class="form-control" id="rf_join" data-testid="report-filter-joiningDate">
+      <button class="btn btn-primary" id="genReportBtn" data-testid="generate-report">Generate Report</button>
+      <button class="btn btn-secondary" id="exportCsvBtn" data-testid="export-csv">Export CSV</button>
+      <button class="btn btn-secondary" id="printBtn" data-testid="print-report">Print</button>
+    </div><div class="table-wrap"><table class="data-table" data-testid="report-table" id="reportTable"></table></div></div>`;
+  } else if(reportTab==='attendance'){
+    area.innerHTML = `<div class="panel"><div class="panel-body toolbar">
+      <select class="form-control" id="rf_dept" data-testid="report-filter-department"><option value="">All Departments</option>${DEPT_LIST.map(d=>`<option>${d}</option>`).join('')}</select>
+      <select class="form-control" id="rf_status" data-testid="report-filter-status"><option value="">All Status</option>${['Present','Absent','Late','Half Day','Leave'].map(s=>`<option>${s}</option>`).join('')}</select>
+      <input type="date" class="form-control" id="rf_from" data-testid="report-filter-from">
+      <input type="date" class="form-control" id="rf_to" data-testid="report-filter-to">
+      <button class="btn btn-primary" id="genReportBtn" data-testid="generate-report">Generate Report</button>
+      <button class="btn btn-secondary" id="exportCsvBtn" data-testid="export-csv">Export CSV</button>
+      <button class="btn btn-secondary" id="printBtn" data-testid="print-report">Print</button>
+    </div><div class="table-wrap"><table class="data-table" data-testid="report-table" id="reportTable"></table></div></div>`;
+  } else {
+    area.innerHTML = `<div class="panel"><div class="panel-body toolbar">
+      <select class="form-control" id="rf_type" data-testid="report-filter-leaveType"><option value="">All Types</option>${['Casual Leave','Sick Leave','Earned Leave','Emergency Leave','Unpaid Leave'].map(t=>`<option>${t}</option>`).join('')}</select>
+      <select class="form-control" id="rf_status" data-testid="report-filter-status"><option value="">All Status</option>${['Pending','Approved','Rejected','Cancelled'].map(s=>`<option>${s}</option>`).join('')}</select>
+      <input type="date" class="form-control" id="rf_from" data-testid="report-filter-from">
+      <input type="date" class="form-control" id="rf_to" data-testid="report-filter-to">
+      <button class="btn btn-primary" id="genReportBtn" data-testid="generate-report">Generate Report</button>
+      <button class="btn btn-secondary" id="exportCsvBtn" data-testid="export-csv">Export CSV</button>
+      <button class="btn btn-secondary" id="printBtn" data-testid="print-report">Print</button>
+    </div><div class="table-wrap"><table class="data-table" data-testid="report-table" id="reportTable"></table></div></div>`;
+  }
+  document.getElementById('genReportBtn').onclick = generateReport;
+  document.getElementById('exportCsvBtn').onclick = exportReportCsv;
+  document.getElementById('printBtn').onclick = ()=>window.print();
+  generateReport();
+}
+let lastReportRows=[], lastReportCols=[];
+function generateReport(){
+  let cols, rows;
+  if(reportTab==='employee'){
+    const dept=document.getElementById('rf_dept').value, status=document.getElementById('rf_status').value, join=document.getElementById('rf_join').value;
+    cols=['Employee ID','Name','Department','Designation','Joining Date','Status'];
+    rows = DB.employees.filter(e=> (!dept||e.department===dept) && (!status||e.status===status) && (!join||e.joiningDate>=join) )
+      .map(e=>[e.id,e.firstName+' '+e.lastName,e.department,e.designation,e.joiningDate,e.status]);
+  } else if(reportTab==='attendance'){
+    const dept=document.getElementById('rf_dept').value, status=document.getElementById('rf_status').value, from=document.getElementById('rf_from').value, to=document.getElementById('rf_to').value;
+    cols=['Employee ID','Name','Department','Date','Status'];
+    rows = DB.attendance.filter(a=>(!dept||a.department===dept)&&(!status||a.status===status)&&(!from||a.date>=from)&&(!to||a.date<=to))
+      .map(a=>[a.employeeId,a.employeeName,a.department,a.date,a.status]);
+  } else {
+    const type=document.getElementById('rf_type').value, status=document.getElementById('rf_status').value, from=document.getElementById('rf_from').value, to=document.getElementById('rf_to').value;
+    cols=['Leave ID','Employee','Leave Type','From','To','Days','Status'];
+    rows = DB.leaves.filter(l=>(!type||l.leaveType===type)&&(!status||l.status===status)&&(!from||l.from>=from)&&(!to||l.to<=to))
+      .map(l=>[l.id,l.employeeName,l.leaveType,l.from,l.to,l.days,l.status]);
+  }
+  lastReportRows=rows; lastReportCols=cols;
+  const table = document.getElementById('reportTable');
+  table.innerHTML = '<thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+
+    (rows.length? rows.map(r=>'<tr>'+r.map(v=>`<td>${v}</td>`).join('')+'</tr>').join('') : `<tr><td colspan="${cols.length}"><div class="empty-state" data-testid="report-empty-state">No records match the selected filters.</div></td></tr>`)
+    +'</tbody>';
+}
+function exportReportCsv(){
+  if(lastReportRows.length===0){ toast('No data to export.','error'); return; }
+  let csv = lastReportCols.join(',')+'\n'+lastReportRows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='peopleflow_'+reportTab+'_report.csv'; a.click();
+  URL.revokeObjectURL(url);
+  toast('Report exported successfully.','success');
+}
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+let settingsTab='company';
+function renderSettings(content){
+  const canCompany = currentUser.role==='Admin';
+  content.innerHTML = `
+  <div class="link-tab" data-testid="settings-tabs">
+    ${canCompany?'<button class="active" data-testid="settings-tab-company" onclick="setSettingsTab(\'company\')">Company Settings</button>':''}
+    <button class="${canCompany?'':'active'}" data-testid="settings-tab-profile" onclick="setSettingsTab('profile')">Profile Settings</button>
+    <button data-testid="settings-tab-password" onclick="setSettingsTab('password')">Password</button>
+  </div>
+  <div id="settingsArea"></div>`;
+  settingsTab = canCompany?'company':'profile';
+  drawSettings();
+}
+function setSettingsTab(t){ settingsTab=t; document.querySelectorAll('.link-tab button').forEach(b=>b.classList.remove('active')); document.querySelector('[data-testid="settings-tab-'+t+'"]').classList.add('active'); drawSettings(); }
+function drawSettings(){
+  const area = document.getElementById('settingsArea');
+  if(settingsTab==='company'){
+    const c = DB.company;
+    area.innerHTML = `<div class="panel"><div class="panel-body"><form id="companyForm">
+      <div class="form-grid">
+        <div class="form-group"><label class="required" for="c_name">Company Name</label><input class="form-control" id="c_name" data-testid="input-companyName" value="${c.name}"></div>
+        <div class="form-group"><label class="required" for="c_email">Email</label><input class="form-control" id="c_email" data-testid="input-companyEmail" value="${c.email}"><div class="form-error" id="err_cemail">Enter a valid email.</div></div>
+        <div class="form-group"><label class="required" for="c_phone">Phone</label><input class="form-control" id="c_phone" data-testid="input-companyPhone" value="${c.phone}"></div>
+        <div class="form-group full"><label class="required" for="c_addr">Address</label><input class="form-control" id="c_addr" data-testid="input-companyAddress" value="${c.address}"></div>
+      </div></form>
+      <div style="margin-top:16px"><button class="btn btn-primary" id="saveCompanyBtn" data-testid="save-company-settings">Save Changes</button></div>
+    </div></div>`;
+    document.getElementById('saveCompanyBtn').onclick = ()=>{
+      const email = document.getElementById('c_email').value.trim();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ document.getElementById('err_cemail').classList.add('show'); return; }
+      DB.company = {name:document.getElementById('c_name').value.trim(),email,phone:document.getElementById('c_phone').value.trim(),address:document.getElementById('c_addr').value.trim()};
+      saveDB(); toast('Company settings updated successfully.','success');
+    };
+  } else if(settingsTab==='profile'){
+    area.innerHTML = `<div class="panel"><div class="panel-body"><form id="profileForm">
+      <div class="form-grid">
+        <div class="form-group"><label class="required" for="p_name">Name</label><input class="form-control" id="p_name" data-testid="input-profileName" value="${currentUser.name}"></div>
+        <div class="form-group"><label class="required" for="p_email">Email</label><input class="form-control" id="p_email" data-testid="input-profileEmail" value="${currentUser.username}" readonly></div>
+        <div class="form-group"><label for="p_phone">Phone</label><input class="form-control" id="p_phone" data-testid="input-profilePhone" placeholder="+91 9XXXXXXXXX"></div>
+      </div></form>
+      <div style="margin-top:16px"><button class="btn btn-primary" id="saveProfileBtn" data-testid="save-profile-settings">Save Changes</button></div>
+    </div></div>`;
+    document.getElementById('saveProfileBtn').onclick = ()=>{
+      const name = document.getElementById('p_name').value.trim();
+      if(!name){ toast('Name is required.','error'); return; }
+      currentUser.name = name;
+      const u = DB.users.find(x=>x.username===currentUser.username); if(u) u.name=name;
+      saveDB(); saveSession(!!localStorage.getItem(SESSION_KEY));
+      renderHeaderUser(); toast('Profile updated successfully.','success');
+    };
+  } else {
+    area.innerHTML = `<div class="panel"><div class="panel-body"><form id="pwForm">
+      <div class="form-group"><label class="required" for="pw_current">Current Password</label><input type="password" class="form-control" id="pw_current" data-testid="input-currentPassword"><div class="form-error" id="err_pwc">Current password is incorrect.</div></div>
+      <div class="form-group"><label class="required" for="pw_new">New Password</label><input type="password" class="form-control" id="pw_new" data-testid="input-newPassword"><div class="helper-text">Minimum 8 characters.</div><div class="form-error" id="err_pwn">Password must be at least 8 characters.</div></div>
+      <div class="form-group"><label class="required" for="pw_confirm">Confirm Password</label><input type="password" class="form-control" id="pw_confirm" data-testid="input-confirmPassword"><div class="form-error" id="err_pwm">Passwords do not match.</div></div>
+      </form>
+      <button class="btn btn-primary" id="savePwBtn" data-testid="save-password">Update Password</button>
+    </div></div>`;
+    document.getElementById('savePwBtn').onclick = ()=>{
+      document.querySelectorAll('#pwForm .form-error').forEach(e=>e.classList.remove('show'));
+      const u = DB.users.find(x=>x.username===currentUser.username);
+      const cur=document.getElementById('pw_current').value, np=document.getElementById('pw_new').value, cp=document.getElementById('pw_confirm').value;
+      let valid=true;
+      if(cur!==u.password){ document.getElementById('err_pwc').classList.add('show'); valid=false; }
+      if(np.length<8){ document.getElementById('err_pwn').classList.add('show'); valid=false; }
+      if(np!==cp){ document.getElementById('err_pwm').classList.add('show'); valid=false; }
+      if(!valid) return;
+      u.password = np; saveDB(); toast('Password updated successfully.','success');
+      document.getElementById('pwForm').reset();
+    };
+  }
+}
+
+/* =========================================================
+   BOOT
+========================================================= */
+loadDB();
+loadSession();
+if(currentUser){ if(!location.hash) location.hash='#/dashboard'; }
+render();
+</script>
+</body>
+</html>

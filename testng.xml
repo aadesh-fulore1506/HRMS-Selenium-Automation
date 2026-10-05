@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite name="HRMS Automation" parallel="classes" thread-count="7">
+
+    <listeners>
+        <listener class-name="listeners.TestListener"/>
+    </listeners>
+    <test name="HRMS Tests">
+
+        <classes>
+
+            <class name="tests.LoginTest"/>
+            <class name="tests.DashboardTest"/>
+            <class name="tests.ReportTest"/>
+            <class name="tests.DepartmentTest"/>
+            <class name="tests.UserRoleTest"/>
+            <class name="tests.AttendanceTest"/>
+            <class name="tests.LeaveTest"/>
+            <class name="tests.EmployeeTest"/>
+
+        </classes>
+
+    </test>
+
+</suite>
