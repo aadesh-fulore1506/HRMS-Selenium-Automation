@@ -11,7 +11,7 @@ import pages.LoginPage;
 
 public class LoginTest extends BaseTest {
 
-	private static final Logger log = LogManager.getLogger(LoginPage.class);
+	private static final Logger log = LogManager.getLogger(LoginTest.class);
 
 	@Test
 	public void verifyAdminLogin() {
